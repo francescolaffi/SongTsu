@@ -1,4 +1,5 @@
 #include "taskFlyport.h"
+#include "httplib.h"
 
 const int OUT_PINS[] = {d1out, d2out, d3out, d4out};
 const int IN_CH[] = {1, 2, 3, 4};
@@ -8,6 +9,48 @@ static void _selectRow(int row)
 	for (i = 0; i < 4; ++i) {
 		IOPut(OUT_PINS[i], i == row ? ON : OFF);
 	}
+}
+
+int val[4][4];
+
+void SendPost()
+{
+	char s[50 + 16*6] = "/bodyback/?c=";
+	int row;
+	for (row = 0; row < 4; ++row) {
+		int col;
+		for (col = 0; col < 4; ++col) {
+			char num[6];
+			if (row == 0 && col == 0) {
+				sprintf(num, "%d", val[row][col]);
+			} else {
+				sprintf(num, "+%d", val[row][col]);
+			}
+			strcat(s, num);
+		}
+	}
+	UARTWrite(1, s);
+	UARTWrite(1, "\n");
+	
+	
+
+	// changed lib to transmit on port 8000
+	TCP_SOCKET* socket = create_http_socket("192.168.1.200");
+ 
+	struct HTTP_HEADER_REQUEST pp;
+	pp.method = "POST";
+	pp.resource = s;
+	pp.version = "HTTP/1.1";
+	pp.host = "192.168.1.200";
+	pp.parameters_size = 0;
+	
+	char* request = get_http_request(&pp);
+        do_http_request(socket,request);
+        free(request);
+	char* response = http_get_response(socket);
+        UARTWrite(1,response);
+        free(response);
+	close_socket(socket);
 }
 
 void FlyportTask()
@@ -20,12 +63,13 @@ void FlyportTask()
 	}
 		
 	WFConnect(WF_DEFAULT);
-	while (WFStatus != CONNECTED);
+	while (WFStatus != CONNECTED)
+		;
 	UARTWrite(1,"Flyport connected... hello world!\r\n");
+	
 	while(1)
 	{
 		char buf[30];
-		int val[4][4];
 		int row, col;
 		for (row = 0; row < 4; ++row) {
 			_selectRow(row);
@@ -40,6 +84,7 @@ void FlyportTask()
 			UARTWrite(1, "\n");
 		}
 		UARTWrite(1, "\n");
+		SendPost();
 		vTaskDelay(200);
 	}
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+ var stitems = [];
 
 /**
  *  called by the webworksready event when the environment is ready
@@ -31,8 +32,10 @@ function initApp(locstor) {
 	};
 	StereomoodOAuth = OAuth(AuthOptions);
     MeTwitOAuth = OAuth(AuthOptions);
-	StereomoodOAuth.consumerKey = locstor.getItem("stid");
-	StereomoodOAuth.consumerSecret = locstor.getItem("stpwd");
+	StereomoodOAuth.consumerKey = "338ba2b6cfc5406eff0255f399e74d69051a0bdb2"
+	locstor.setItem("stid","338ba2b6cfc5406eff0255f399e74d69051a0bdb2");
+	StereomoodOAuth.consumerSecret = "4cbaf0d53abfd235814612e5657214fd";
+	locstor.setItem("stid","4cbaf0d53abfd235814612e5657214fd");
 	StereomoodOAuth.callbackUrl = 'http://www.steromood.com/api/oauth/authenticate';
 	MeTwitOAuth.consumerKey	= locstor.getItem("meid");
 	MeTwitOAuth.consumerSecret = locstor.getItem("mepwd");
@@ -224,42 +227,70 @@ function getFeed() {
 function checkMeteo(lat,lon) {
 
 
-	var url = "https://api.metwit.com/v2/weather/?location_lat=" + lat + " &location_lng=" +lon ;
+	var url = "https://api.metwit.com/v2/weather/?location_lat=" + lat + "&location_lng=" +lon ;
 
 	$.ajax({
 		type: 'GET',
 		url: url,
-
-		success: function() {
-		   var xml = "<rss version='2.0'><channel><title>RSS Title</title></channel></rss>",
-                   xmlDoc = $.parseXML( xml ),
-                   $xml = $( xmlDoc ),
-                   $status = $xml.find( "status" );
+        dataType: "xml",
+		success: function(xml) {
+                   var status = $(xml).find( "status" );
+				   if (status =="clear") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/clear.png" }
+				   else if (status =="rainy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/rainy.png" }
+				   else if (status =="stormy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/stormy.png" }
+				   else if (status =="snowy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/snowy.png" }
+				   else if (status =="partly cloudy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/partly-cloudy.png" }
+				   else if (status =="cloudy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/cloudy.png" }
+				   else if (status =="hailing") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/hailing.png" }
+				   else if (status =="heavy seas") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/heavy-seas.png" }
+				   else if (status =="calm seas") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/calm-seas.png" }
+				   else if (status =="foggy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/foggy.png" }
+				   else if (status =="snow flurries") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/snow-flurries.png" }
+				   else if (status =="windy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/windy.png" }
+				   else {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/clear.png" }
 		},
-
 		error: function(data) {
-			alert('Error checking in!' + data.text);
+		   $("img").src = "img/metwit/windy.png";
+//			alert('Error checking in!' + data.text);
 		}
 	});
 }
 
 function checkSongs(mood) {
      if (!(mood == '')) {
-	var url = "http://www.stereomood.com/api/search.xml?type=" + mood ;
-
-	$.ajax({
-		type: 'GET',
-		url: url,
-
-		success: function() {
-			toast('Checked in @ ' + venueName);
-		},
+	    var url = "http://www.stereomood.com/api/search.xml?api_key=338ba2b6cfc5406eff0255f399e74d69051a0bdb2&type=mood&q=" + mood ;
+	    $.ajax({
+		   type: 'GET',
+		   url: url,
+           datatype: 'xml',
+		   success: function(xml) {
+//		      xmldoc=XML.load(xml);
+			  $(xml).find("category").each(function() {
+              stitems.push($(this).find("audio_url").text());
+		    })},
 
 		error: function(data) {
-			alert('Error checking in!' + data.text);
+//			alert('Error checking in!' + data.text);
 		}
 	});
      }
+}
+
+function CheckMood () {
+checkSongs('Relax');
+/*
+$.ajax({
+		type: 'GET',
+		url: 'http://192.168.1.200:8000/bodymind',
+		   success: function(data) {
+		      var risp = JSON.parse(data);
+			  checkSongs(risp[1]);
+		      },
+
+		error: function(data) {
+			alert('Error StereoMood!' + data.text);
+		}
+}); */
 }
 
 /**
@@ -293,7 +324,7 @@ function CheckMeTwit(id,pwd) {
 function CheckStereoMood(id,pwd) {
    StereomoodOAuth.consumerKey = id;
    StereomoodOAuth.consumerSecret = pwd;
-   startStereoMoodOAuth();
+ //  startStereoMoodOAuth();
 }
 
 
@@ -378,4 +409,41 @@ var lcid = document.getElement("gsmood").id;
 	locstor.setItem(lcsnowy,lcid);
 	locstor.setItem(lcsnowflurries,lcid);
     locstor.setItem(lcwindy,"");
+}
+
+// initialize accelerometer
+function initSensors() {
+
+	// start listening to the accelerometer sensor with a delay feedback of 1000 ** microseconds **
+	blackberry.sensors.setOptions("deviceaccelerometer", {
+		delay: 10000,
+		background: true,
+		batching: false,
+		queue: false,
+		reducedReporting: false
+	});
+
+	// start the event listener for the sensors callback
+	blackberry.event.addEventListener("deviceaccelerometer", accelCallback);
+}
+
+
+// accelerometer callback
+function accelCallback(data) {
+	x = data.x;
+
+	if(x <= -13) {
+		// if sound is playing, do not play another one
+		if(hitPlaying == 1) {
+			return false;
+		
+		// no sounds currently playing, play a sound
+		} else {
+			playHit();
+			hitPlaying = 1;
+			setTimeout(function() {
+				hitPlaying = 0;
+			}, 200);
+		}
+	}
 }
