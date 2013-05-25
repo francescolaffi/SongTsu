@@ -126,6 +126,7 @@
                                      //       };
 									   if ((rism) && (!rismet))
 									      {
+									   if (typeof stitems[index] !== 'undefined' && stitems[index] !== null){
 										// play default music
 										  blackberry.audio.Player();
 										  
@@ -147,7 +148,7 @@
 
 //                                         playerInstance.addPlayerListener(null);
                                          }										  
-									}
+									}}
 								}
 							}
 						});

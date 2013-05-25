@@ -32,7 +32,7 @@
 	<feature id="blackberry.connection" />
 	<feature id="blackberry.app.event" />
 	<feature id="blackberry.ui.toast" />
-    <feature id="blackberry.sensors" />
+    <feature id="blackberry.ui.contextmenu" />
 	<feature id="blackberry.invoke.card" />
 	
 	<rim:permissions>

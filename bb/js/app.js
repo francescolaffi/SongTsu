@@ -31,10 +31,10 @@ function initApp(locstor) {
 	};
 	StereomoodOAuth = OAuth(AuthOptions);
     MeTwitOAuth = OAuth(AuthOptions);
-	StereomoodOAuth.consumerKey = "seawolf"
-	locstor.setItem("stid","seawolf");
-	StereomoodOAuth.consumerSecret = "ci20cc05";
-	locstor.setItem("stid","ci20cc05");
+	StereomoodOAuth.consumerKey = "338ba2b6cfc5406eff0255f399e74d69051a0bdb2"
+	locstor.setItem("stid","338ba2b6cfc5406eff0255f399e74d69051a0bdb2");
+	StereomoodOAuth.consumerSecret = "4cbaf0d53abfd235814612e5657214fd";
+	locstor.setItem("stid","4cbaf0d53abfd235814612e5657214fd");
 	StereomoodOAuth.callbackUrl = 'http://www.steromood.com/api/oauth/authenticate';
 	MeTwitOAuth.consumerKey	= locstor.getItem("meid");
 	MeTwitOAuth.consumerSecret = locstor.getItem("mepwd");
@@ -226,22 +226,27 @@ function getFeed() {
 function checkMeteo(lat,lon) {
 
 
-	var url = "https://api.metwit.com/v2/weather/?location_lat=" + lat + " &location_lng=" +lon ;
+	var url = "https://api.metwit.com/v2/weather/?location_lat=" + lat + "&location_lng=" +lon ;
 
 	$.ajax({
 		type: 'GET',
 		url: url,
-
+        dataType: "xml",
 		success: function(xml) {
                    var status = $(xml).find( "status" );
-				   if (status =="clear") {}
-				   if (status =="rainy") {}
-				   if (status =="stormy") {}
-				   if (status =="snowy") {}
-				   if (status =="partly cloudy") {}
-				   if (status =="cloudy") {}
-				   if (status =="hailing") {}
-			//	   document.getElementbyId("meteo").
+				   if (status =="clear") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/clear.png" }
+				   else if (status =="rainy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/rainy.png" }
+				   else if (status =="stormy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/stormy.png" }
+				   else if (status =="snowy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/snowy.png" }
+				   else if (status =="partly cloudy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/partly-cloudy.png" }
+				   else if (status =="cloudy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/cloudy.png" }
+				   else if (status =="hailing") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/hailing.png" }
+				   else if (status =="heavy seas") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/heavy-seas.png" }
+				   else if (status =="calm seas") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/calm-seas.png" }
+				   else if (status =="foggy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/foggy.png" }
+				   else if (status =="snow flurries") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/snow-flurries.png" }
+				   else if (status =="windy") {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/windy.png" }
+				   else {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/clear.png" }
 		},
 		error: function(data) {
 			alert('Error checking in!' + data.text);
@@ -252,7 +257,7 @@ function checkMeteo(lat,lon) {
 function checkSongs(mood) {
      if (!(mood == '')) {
 	    var url = "http://www.stereomood.com/api/search.xml?type=" + mood ;
-        var items = [];
+        var stitems = [];
 	    $.ajax({
 		   type: 'GET',
 		   url: url,
@@ -260,7 +265,7 @@ function checkSongs(mood) {
 		   success: function(xml) {
 		      xmldoc=XML.load(xml);
 			  $(xmldoc).find("category").each(function() {
-              items.push($(this).find("audio_url").text());
+              stitems.push($(this).find("audio_url").text());
 		    })},
 
 		error: function(data) {
