@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+ var stitems = [];
 
 /**
  *  called by the webworksready event when the environment is ready
@@ -249,30 +250,47 @@ function checkMeteo(lat,lon) {
 				   else {document.getElementbyId("meteo").getElementsByTagName('img')[0].src = "img/metwit/clear.png" }
 		},
 		error: function(data) {
-			alert('Error checking in!' + data.text);
+		   $("img").src = "img/metwit/windy.png";
+//			alert('Error checking in!' + data.text);
 		}
 	});
 }
 
 function checkSongs(mood) {
      if (!(mood == '')) {
-	    var url = "http://www.stereomood.com/api/search.xml?type=" + mood ;
-        var stitems = [];
+	    var url = "http://www.stereomood.com/api/search.xml?api_key=338ba2b6cfc5406eff0255f399e74d69051a0bdb2&type=mood&q=" + mood ;
 	    $.ajax({
 		   type: 'GET',
 		   url: url,
-
+           datatype: 'xml',
 		   success: function(xml) {
-		      xmldoc=XML.load(xml);
-			  $(xmldoc).find("category").each(function() {
+//		      xmldoc=XML.load(xml);
+			  $(xml).find("category").each(function() {
               stitems.push($(this).find("audio_url").text());
 		    })},
 
 		error: function(data) {
-			alert('Error checking in!' + data.text);
+//			alert('Error checking in!' + data.text);
 		}
 	});
      }
+}
+
+function CheckMood () {
+checkSongs('Relax');
+/*
+$.ajax({
+		type: 'GET',
+		url: 'http://192.168.1.200:8000/bodymind',
+		   success: function(data) {
+		      var risp = JSON.parse(data);
+			  checkSongs(risp[1]);
+		      },
+
+		error: function(data) {
+			alert('Error StereoMood!' + data.text);
+		}
+}); */
 }
 
 /**
@@ -306,7 +324,7 @@ function CheckMeTwit(id,pwd) {
 function CheckStereoMood(id,pwd) {
    StereomoodOAuth.consumerKey = id;
    StereomoodOAuth.consumerSecret = pwd;
-   startStereoMoodOAuth();
+ //  startStereoMoodOAuth();
 }
 
 

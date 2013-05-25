@@ -72,12 +72,13 @@
 									}, false);
                                     
 				                } else if (id === 'menu') {
-								
+//								    CheckMood();
                                     $.when(initGoogleMaps()).then(function(){
 									   
 											 		setTimeout(function() {
 													startGeolocation();
 											        checkMeteo(myLat, myLong);
+													
 												}, 6000);
 										
 
@@ -124,38 +125,25 @@
 */
 										        
                                      //       };
-									   if ((rism) && (!rismet))
+//									   if ((rism) && (!rismet))
+                                       $.when(CheckMood()).then(function()
 									      {
-									   if (typeof stitems[index] !== 'undefined' && stitems[index] !== null){
+	//								   if (typeof stitems[index] !== 'undefined' && stitems[index] !== null){
 										// play default music
-										  blackberry.audio.Player();
 										  
-                                          var playerInstance = new blackberry.invoke.card.invokeMediaPlayer();								
-                                          playerInstance.addPlayerListener(OnPlayerUpdate);
-
-                                          // Invoked when there is an update event for the player.
-                                         function OnPlayerUpdate(player, event, eventData) {
-                                         try {
-										    
-                                            alert("Player's duration is: " + player.duration)
-                                             } catch (e) {}
-                                         try {
-                                            alert("Event: " + event);
-                                             } catch (e) {}
-                                         try {
-                                             alert("Event Data:  " + eventData);
-                                             } catch (e) {}
-
-//                                         playerInstance.addPlayerListener(null);
-                                         }										  
-									}}
+                                       var audio = document.createElement('audio');
+                                       audio.src = stitems[0];
+                                       audio.controls = true;
+                                       document.body.appendChild(audio);
+                                          										  
+									});
 								}
 							}
 						});
 						/* Our default start page. */
 						bb.pushScreen('menu.html', 'menu');
 						initApp(localStorage);
-						initSensors();
+//						initSensors();
 					}
 				}, false);
 			}, false);
@@ -171,8 +159,9 @@
  /*              if ((localStorage.getItem("meid") !== '') && (localStorage.getItem("mepwd") !== '')) var rismet = startMeTwitOAuth();
                else var rismet = false; */
 			   var rismet = true;
-               if ((localStorage.getItem("stid") !== '') && (localStorage.getItem("stipwd")!== '')) var rism = startStereoMoodOAuth();
-               else var rism = false;
+ //              if ((localStorage.getItem("stid") !== '') && (localStorage.getItem("stipwd")!== '')) var rism = startStereoMoodOAuth();
+ //              else var rism = false;
+               var rism = true;
                if (localStorage.getItem("webip") !== '') {}
                else var webip = "";
             }		
