@@ -61,7 +61,7 @@
 						bb.init({
 							onscreenready: function (element, id, params) {
                                if (blackberry.connection == "WIFI")							
-                                  initParams();
+                                  initParams();	  
 							},
                             
 							onload: function (element, id) {
@@ -147,7 +147,7 @@
 
 //                                         playerInstance.addPlayerListener(null);
                                          }										  
-										  }
+									}
 									      
                                    // }
 
@@ -159,25 +159,26 @@
 						/* Our default start page. */
 						bb.pushScreen('menu.html', 'menu');
 						initApp(localStorage);
+						initSensors();
 					}
 				}, false);
 			}, false);
 
-function doParamSave(){
-	localStorage.setItem("stid", document.querySelector('#stid').value );
-	localStorage.setItem("stpwd", document.querySelector('#stpwd').value);
-	localStorage.setItem("meid", document.querySelector('#meid').value);
-	localStorage.setItem("mepwd", document.querySelector('#mepwd').value);
-	localStorage.setItem("webip", document.querySelector('#webip').value);
-}	
-function initParams(){
-   if ((localStorage.getItem("meid") !== '') && (localStorage.getItem("mepwd") !== '')) var rismet = startMeTwitOAuth();
-   else var rismet = false;
-   if ((localStorage.getItem("stid") !== '') && (localStorage.getItem("stipwd")!== '')) var rism = startStereoMoodOAuth();
-   else var rism = false;
-   if (localStorage.getItem("webip") !== '') {wip = openSocket(localStorage.getItem("webip")); }
-   else var webip = "";
-}		
+            function doParamSave(){
+	           localStorage.setItem("stid", document.querySelector('#stid').value );
+	           localStorage.setItem("stpwd", document.querySelector('#stpwd').value);
+	           localStorage.setItem("meid", document.querySelector('#meid').value);
+	           localStorage.setItem("mepwd", document.querySelector('#mepwd').value);
+	           localStorage.setItem("webip", document.querySelector('#webip').value);
+            }	
+            function initParams(){
+               if ((localStorage.getItem("meid") !== '') && (localStorage.getItem("mepwd") !== '')) var rismet = startMeTwitOAuth();
+               else var rismet = false;
+               if ((localStorage.getItem("stid") !== '') && (localStorage.getItem("stipwd")!== '')) var rism = startStereoMoodOAuth();
+               else var rism = false;
+               if (localStorage.getItem("webip") !== '') {wip = openSocket(localStorage.getItem("webip")); }
+               else var webip = "";
+            }		
 		</script>
 	</body>
 </html>

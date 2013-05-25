@@ -31,8 +31,10 @@ function initApp(locstor) {
 	};
 	StereomoodOAuth = OAuth(AuthOptions);
     MeTwitOAuth = OAuth(AuthOptions);
-	StereomoodOAuth.consumerKey = locstor.getItem("stid");
-	StereomoodOAuth.consumerSecret = locstor.getItem("stpwd");
+	StereomoodOAuth.consumerKey = "seawolf"
+	locstor.setItem("stid","seawolf");
+	StereomoodOAuth.consumerSecret = "ci20cc05";
+	locstor.setItem("stid","ci20cc05");
 	StereomoodOAuth.callbackUrl = 'http://www.steromood.com/api/oauth/authenticate';
 	MeTwitOAuth.consumerKey	= locstor.getItem("meid");
 	MeTwitOAuth.consumerSecret = locstor.getItem("mepwd");
@@ -378,4 +380,41 @@ var lcid = document.getElement("gsmood").id;
 	locstor.setItem(lcsnowy,lcid);
 	locstor.setItem(lcsnowflurries,lcid);
     locstor.setItem(lcwindy,"");
+}
+
+// initialize accelerometer
+function initSensors() {
+
+	// start listening to the accelerometer sensor with a delay feedback of 1000 ** microseconds **
+	blackberry.sensors.setOptions("deviceaccelerometer", {
+		delay: 10000,
+		background: true,
+		batching: false,
+		queue: false,
+		reducedReporting: false
+	});
+
+	// start the event listener for the sensors callback
+	blackberry.event.addEventListener("deviceaccelerometer", accelCallback);
+}
+
+
+// accelerometer callback
+function accelCallback(data) {
+	x = data.x;
+
+	if(x <= -13) {
+		// if sound is playing, do not play another one
+		if(hitPlaying == 1) {
+			return false;
+		
+		// no sounds currently playing, play a sound
+		} else {
+			playHit();
+			hitPlaying = 1;
+			setTimeout(function() {
+				hitPlaying = 0;
+			}, 200);
+		}
+	}
 }
