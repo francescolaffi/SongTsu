@@ -72,18 +72,14 @@
 									}, false);
                                     
 				                } else if (id === 'menu') {
-																			 		setTimeout(function() {
-													startGeolocation();
-											        checkMeteo(myLat, myLong);
-												}, 6000);
 								
                                     $.when(initGoogleMaps()).then(function(){
-									   if (rismet) {
+									   
 											 		setTimeout(function() {
 													startGeolocation();
 											        checkMeteo(myLat, myLong);
 												}, 6000);
-										}
+										
 
 									// set a timeout and store the reference
                                     //var timer = window.setTimeout(doAlternateStuff, timeoutSeconds * 1000);

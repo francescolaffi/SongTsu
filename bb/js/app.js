@@ -232,13 +232,17 @@ function checkMeteo(lat,lon) {
 		type: 'GET',
 		url: url,
 
-		success: function() {
-		   var xml = "<rss version='2.0'><channel><title>RSS Title</title></channel></rss>",
-                   xmlDoc = $.parseXML( xml ),
-                   $xml = $( xmlDoc ),
-                   $status = $xml.find( "status" );
+		success: function(xml) {
+                   var status = $(xml).find( "status" );
+				   if (status =="clear") {}
+				   if (status =="rainy") {}
+				   if (status =="stormy") {}
+				   if (status =="snowy") {}
+				   if (status =="partly cloudy") {}
+				   if (status =="cloudy") {}
+				   if (status =="hailing") {}
+			//	   document.getElementbyId("meteo").
 		},
-
 		error: function(data) {
 			alert('Error checking in!' + data.text);
 		}
@@ -247,15 +251,17 @@ function checkMeteo(lat,lon) {
 
 function checkSongs(mood) {
      if (!(mood == '')) {
-	var url = "http://www.stereomood.com/api/search.xml?type=" + mood ;
+	    var url = "http://www.stereomood.com/api/search.xml?type=" + mood ;
+        var items = [];
+	    $.ajax({
+		   type: 'GET',
+		   url: url,
 
-	$.ajax({
-		type: 'GET',
-		url: url,
-
-		success: function() {
-			toast('Checked in @ ' + venueName);
-		},
+		   success: function(xml) {
+		      xmldoc=XML.load(xml);
+			  $(xmldoc).find("category").each(function() {
+              items.push($(this).find("audio_url").text());
+		    })},
 
 		error: function(data) {
 			alert('Error checking in!' + data.text);
