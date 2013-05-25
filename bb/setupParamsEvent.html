@@ -1,0 +1,63 @@
+<!--
+* Copyright 2010-2012 Research In Motion Limited.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+-->
+
+<div data-bb-type="screen">
+<div data-bb-type="title" data-bb-caption="Edit Contact" data-bb-back-caption="Cancel" data-bb-action-caption="Save" onactionclick="doParamSave()"></div>
+	<div data-bb-type="round-panel">
+		<div data-bb-type="panel-header">MeTwit</div>
+		<div data-bb-type="label-control-container">
+			<div data-bb-type="row">
+				<div data-bb-type="label">Username</div>
+				<input id='meid' type="text" />
+			</div>
+			<div data-bb-type="row">
+				<div data-bb-type="label">Password</div>
+				<input id='mepwd' type="password" />
+			</div>
+			<div data-bb-type="button" data-bb-style="Text Only" data-bb-img="./icons/Large/White/icon_127.png" onclick="CheckMeTwit(document.querySelector('#meid').value,document.querySelector('#mepwd').value)">Check</div>
+		</div>
+	</div>
+	<div data-bb-type="round-panel">
+		<div data-bb-type="panel-header">Stereomood</div>
+		<div data-bb-type="label-control-container">
+			<div data-bb-type="row">
+				<div data-bb-type="label">Username</div>
+				<input id='stid' type="text" />
+			</div>
+			<div data-bb-type="row">
+				<div data-bb-type="label">Password</div>
+				<input id='stpwd' type="password" />
+			</div>
+			<div>
+			<div data-bb-type="button" data-bb-style="Text Only" data-bb-img="./icons/Large/White/icon_127.png" onclick="CheckStereoMood(document.querySelector('#stid').value,document.querySelector('#stpwd').value)">Check</div>
+			</div>
+		</div>
+	</div>
+	<div data-bb-type="round-panel">
+		<div data-bb-type="panel-header">Webserver</div>
+		<div data-bb-type="label-control-container">
+			<div data-bb-type="row">
+				<div data-bb-type="label">IP Address</div>
+				<input id='webip' type="text" />
+			</div>
+
+		</div>
+	</div>
+	<div>
+	   <div data-bb-type="button" id="confBoth" data-bb-img="./icons/Large/White/icon_127.png" data-bb-style="Text Only" >Config both</div>
+	</div>
+<div data-bb-type="action-bar" data-bb-back-caption="Back"></div>
+</div>

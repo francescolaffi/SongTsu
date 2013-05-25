@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<!--
+* Copyright 2010-2012 Research In Motion Limited.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+-->
+
+<html>
+	<head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
+			<link type="text/css" rel="stylesheet" href="css/bbui.css" />
+			
+			<style type="text/css">
+               body {
+                  min-height: 500px;
+                    }
+               .center {
+               text-align: center;
+               }
+      #page {
+        font-family: Arial, sans-serif;
+        font-size: 85%;
+        width: 408px;
+        margin: 0 auto;
+        padding: 0 30px;
+      }
+      h3 {
+        color: #006A3C;
+      }
+      #map-canvas {
+        height: 300px;
+      }
+    </style>
+	</head>
+	<body>
+		<script type="text/javascript" src="local:///chrome/webworks.js"></script>
+		<script type="text/javascript" src="js/bbui.js"></script>
+		<script src="js/jquery-1.8.1.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="js/app.js"></script>
+		<script type="text/javascript" src="js/jsOauth.js"></script>
+		<script type="text/javascript" src="js/websockets.js"></script>
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+		<script type="text/javascript">
+			/*global blackberry, bb */
+
+			window.addEventListener('DOMContentLoaded', function () {
+				document.addEventListener('webworksready', function () {
+					if (typeof bb !== 'undefined') {
+						bb.init({
+							onscreenready: function (element, id, params) {
+                               if (blackberry.connection == "WIFI")							
+                                  initParams();
+							},
+                            
+							onload: function (element, id) {
+							},	
+							ondomready: function (element, id) {
+								if (id === 'config') {
+								   element.querySelector('#confBoth').addEventListener('click', function () {
+								      bb.pushScreen('setupBoth.html', 'configBoth');
+									}, false);
+                                    
+				                } else if (id === 'menu') {
+                                    $.when(initGoogleMaps()).then(function(){
+									
+									// set a timeout and store the reference
+                                    var timer = window.setTimeout(doAlternateStuff, timeoutSeconds * 1000);
+                                    maps = document.getElementById("map");
+                                    // now listen for the tilesloaded event
+									/*
+                                    google.maps.event.addListener(maps, 'tilesloaded', function() {
+                                    // cancel the timeout
+                                    window.clearTimeout(timer);
+                                    usingMap = true;});*/ });
+									
+                                    function doAlternateStuff() {
+/*									   
+                                       var startPos;
+                                       navigator.geolocation.getCurrentPosition(
+                                          function(position) {
+                                             startPos = position;
+                                             latitude = startPos.coords.latitude;
+                                             longitude = startPos.coords.longitude;
+											 maps.setCenter(startPos.coords);
+											 marker.setPosition(startPos.coords);
+											 if (rismet)
+									            {
+										        checkMeteo(startPos);
+										        }
+                                            },
+                                          function(error) {
+                                             switch(error.code) {
+                                                case PositionError.PERMISSION_DENIED :
+                                                   alert("Error. PERMISSION_DENIED");
+                                                   break;
+                                                case PositionError.POSITION_UNAVAILABLE:
+                                                   alert("Error. POSITION_UNAVAILABLE");
+                                                   break;
+                                                case PositionError.TIMEOUT:
+                                                   alert("Error. TIMEOUT");
+                                                   break;
+                                                default:
+                                                   alert("unknow error code");
+                                                }
+                                            });
+*/
+											 if (rismet) {
+											 		setTimeout(function() {
+													   startGeolocation();
+											           checkMeteo(myLat, myLong);
+													   }, 6000);
+												}
+										        
+                                            };
+									   if ((rism) && (!rismet))
+									      {
+										// play default music
+										  blackberry.audio.Player();
+										  
+                                          var playerInstance = new blackberry.invoke.card.invokeMediaPlayer();								
+                                          playerInstance.addPlayerListener(OnPlayerUpdate);
+
+                                          // Invoked when there is an update event for the player.
+                                         function OnPlayerUpdate(player, event, eventData) {
+                                         try {
+										    
+                                            alert("Player's duration is: " + player.duration)
+                                             } catch (e) {}
+                                         try {
+                                            alert("Event: " + event);
+                                             } catch (e) {}
+                                         try {
+                                             alert("Event Data:  " + eventData);
+                                             } catch (e) {}
+
+//                                         playerInstance.addPlayerListener(null);
+                                         }										  
+										  }
+									      
+                                   // }
+
+
+
+								}
+							}
+						});
+						/* Our default start page. */
+						bb.pushScreen('menu.html', 'menu');
+						initApp(localStorage);
+					}
+				}, false);
+			}, false);
+
+function doParamSave(){
+	localStorage.setItem("stid", document.querySelector('#stid').value );
+	localStorage.setItem("stpwd", document.querySelector('#stpwd').value);
+	localStorage.setItem("meid", document.querySelector('#meid').value);
+	localStorage.setItem("mepwd", document.querySelector('#mepwd').value);
+	localStorage.setItem("webip", document.querySelector('#webip').value);
+}	
+function initParams(){
+   if ((localStorage.getItem("meid") !== '') && (localStorage.getItem("mepwd") !== '')) var rismet = startMeTwitOAuth();
+   else var rismet = false;
+   if ((localStorage.getItem("stid") !== '') && (localStorage.getItem("stipwd")!== '')) var rism = startStereoMoodOAuth();
+   else var rism = false;
+   if (localStorage.getItem("webip") !== '') {wip = openSocket(localStorage.getItem("webip")); }
+   else var webip = "";
+}		
+		</script>
+	</body>
+</html>
