@@ -37,6 +37,25 @@ Route::get('/', function()
 	return View::make('home.index');
 });
 
+Route::controller(Controller::detect());
+
+/*
+Route::get('bodyback', function()
+{
+	return "bodyback";
+});
+
+Route::get('bodymind', function()
+{
+	return "bodymind";
+});
+
+Route::post('register', function()
+{
+    //register json
+});
+*/
+
 /*
 |--------------------------------------------------------------------------
 | Application 404 & 500 Error Handlers
