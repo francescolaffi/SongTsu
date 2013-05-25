@@ -13,7 +13,7 @@ class Bodyback_Controller extends Base_Controller {
 
     public function get_index()
     {
-		
+/*		
 		//
 		// DA RIMUOVERE
 		//
@@ -26,7 +26,7 @@ class Bodyback_Controller extends Base_Controller {
 		//
 		// END
 		//
-
+*/
 
 		$back = Back::order_by('updated_at', 'desc')->first();
 
@@ -48,24 +48,35 @@ class Bodyback_Controller extends Base_Controller {
 
     public function post_index()
     {
+    	
+		$dataAll = Input::all();
 
-    	//$cell00 = Input::get('cell00');
+    	//$data = Input::json();
+
+    	$data = $dataAll['c'];
+
+    	$data = explode("+", $data);
     	
-    	$data = Input::json();
-    	
+    	$enable = false;
+
     	if ( is_array($data) ){
 
     		$back = new Back();
     		for ($i=0; $i < 4; $i++) { 
 				for ($j=0; $j < 4; $j++) { 
 					$campo = "cell$i$j";
-					$back->$campo = $data[$i*4 + $j];
+
+					$valore = $data[$i*4 + $j];
+					if ( $valore != 0 ) $enable = true;
+					$back->$campo = $valore;
 				}
 			}
-			$back->save();
-
+			if ( $enable ) {
+				$back->save();
+				return Response::make( "", 204 )->header( 'Access-Control-Allow-Origin', "*" );
+			}
     	}
-
+		
 		return Response::make( "NO DATA", 404 )->header( 'Access-Control-Allow-Origin', "*" );
     }
 
