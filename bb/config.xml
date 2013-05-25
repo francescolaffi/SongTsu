@@ -20,7 +20,8 @@
 		id="OWhymcaHack">
 
 	<name>Whymca hackreality 2</name>
-	<author>Lucis</author>
+	<author>I BonziEmiliani : Lucio - Stefano - Francesco - Yuri</author>
+	<icon src="images/iconWhite.png"/>
 	<content src="index.html" />
 
 	<rim:navigation mode="focus" />
