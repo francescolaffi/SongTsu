@@ -53,19 +53,26 @@ class Bodyback_Controller extends Base_Controller {
     	
     	$data = Input::json();
     	
+    	$enable = false;
+
     	if ( is_array($data) ){
 
     		$back = new Back();
     		for ($i=0; $i < 4; $i++) { 
 				for ($j=0; $j < 4; $j++) { 
 					$campo = "cell$i$j";
-					$back->$campo = $data[$i*4 + $j];
+
+					$valore = $data[$i*4 + $j];
+					if ( $valore != 0 ) $enable = true;
+					$back->$campo = $valore;
 				}
 			}
-			$back->save();
-
+			if ( $enable ) {
+				$back->save();
+				return Response::make( "", 204 )->header( 'Access-Control-Allow-Origin', "*" );
+			}
     	}
-
+		
 		return Response::make( "NO DATA", 404 )->header( 'Access-Control-Allow-Origin', "*" );
     }
 
