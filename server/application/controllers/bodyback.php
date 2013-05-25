@@ -46,7 +46,7 @@ class Bodyback_Controller extends Base_Controller {
 			
 			return Response::make( json_encode($output), 200 )->header( 'Access-Control-Allow-Origin', "*" );
 		} else {
-			return Response::make( json_encode($output), 200 )->header( 'Access-Control-Allow-Origin', "*" );
+			return Response::make( json_encode(array_fill(0, 16, 0)), 200 )->header( 'Access-Control-Allow-Origin', "*" );
 		}
     }
 
