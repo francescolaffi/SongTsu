@@ -28,10 +28,14 @@ class Bodyback_Controller extends Base_Controller {
 		//
 */
 
-		$back = Back::order_by('updated_at', 'desc')->first();
+		$datetime = date('Y-m-d H:i:s', strtotime("-2 second")); //2013-05-25 14:12:19
 
-		if ( null != $back ) {
-			$output = array();
+		$backs = Back::where('updated_at', '>', $datetime)->take(10)->get();
+		$output = array();
+		
+		if (  count ($backs) >  0 ) {
+			
+			$back = $backs[0];
 			
 			for ($i=0; $i < 4; $i++) { 
 				for ($j=0; $j < 4; $j++) { 
@@ -42,7 +46,7 @@ class Bodyback_Controller extends Base_Controller {
 			
 			return Response::make( json_encode($output), 200 )->header( 'Access-Control-Allow-Origin', "*" );
 		} else {
-			return Response::make( "NO DATA", 200 )->header( 'Access-Control-Allow-Origin', "*" );
+			return Response::make( json_encode($output), 200 )->header( 'Access-Control-Allow-Origin', "*" );
 		}
     }
 
@@ -54,9 +58,9 @@ class Bodyback_Controller extends Base_Controller {
     	//$data = Input::json();
 
     	$data = $dataAll['c'];
-
-    	$data = explode("+", $data);
     	
+    	$data = explode(" ", $data);
+
     	$enable = false;
 
     	if ( is_array($data) ){
@@ -67,8 +71,10 @@ class Bodyback_Controller extends Base_Controller {
 					$campo = "cell$i$j";
 
 					$valore = $data[$i*4 + $j];
-					if ( $valore != 0 ) $enable = true;
-					$back->$campo = $valore;
+					if ( $valore > 500 ) {
+						$enable = true;
+						$back->$campo = $valore;
+					} 
 				}
 			}
 			if ( $enable ) {
