@@ -13,7 +13,7 @@ class Bodyback_Controller extends Base_Controller {
 
     public function get_index()
     {
-		
+/*		
 		//
 		// DA RIMUOVERE
 		//
@@ -26,7 +26,7 @@ class Bodyback_Controller extends Base_Controller {
 		//
 		// END
 		//
-
+*/
 
 		$back = Back::order_by('updated_at', 'desc')->first();
 
@@ -49,7 +49,13 @@ class Bodyback_Controller extends Base_Controller {
     public function post_index()
     {
     	
-    	$data = Input::json();
+		$dataAll = Input::all();
+
+    	//$data = Input::json();
+
+    	$data = $dataAll['c'];
+
+    	$data = explode("+", $data);
     	
     	$enable = false;
 

@@ -12,8 +12,6 @@ class Bodymind_Controller extends Base_Controller {
 			$output = array();
 			$output[0] = (int)$volume->intensita; //volume
 			
-			//$backs = Back::order_by('updated_at', 'desc')->take(10)->get();
-			
 			$datetime = date('Y-m-d H:i:s', strtotime("-10 second")); //2013-05-25 14:12:19
 
 			$backs = Back::where('updated_at', '>', $datetime)->take(10)->get();
