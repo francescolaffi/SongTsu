@@ -13,8 +13,20 @@ static void _selectRow(int row)
 
 int val[4][4];
 
+void Connect()
+{
+	if (WFStatus != CONNECTED) {
+		WFConnect(WF_DEFAULT);
+		while (WFStatus != CONNECTED)
+			;
+		UARTWrite(1,"Flyport connected... hello world!\r\n");
+	}
+}
+
 void SendPost()
 {
+	Connect();
+	
 	char s[50 + 16*6] = "/bodyback/?c=";
 	int row;
 	for (row = 0; row < 4; ++row) {
@@ -49,24 +61,21 @@ void SendPost()
         free(request);
 	char* response = http_get_response(socket);
         UARTWrite(1,response);
+		UARTWrite(1, "\n");
         free(response);
 	close_socket(socket);
 }
 
 void FlyportTask()
 {
-	vTaskDelay(200);
+	vTaskDelay(10);
 	UARTWrite(1,"* SongTsu *\r\n");
 	int i;
 	for (i = 0; i < 4; ++i) {
 		IOInit(OUT_PINS[i], out);
 	}
-		
-	WFConnect(WF_DEFAULT);
-	while (WFStatus != CONNECTED)
-		;
-	UARTWrite(1,"Flyport connected... hello world!\r\n");
-	
+
+	Connect();
 	while(1)
 	{
 		char buf[30];
@@ -78,13 +87,13 @@ void FlyportTask()
 				int n;
 				n = ADCVal(IN_CH[col]);
 				val[row][col] = n;
-				sprintf(buf, " %05d", n);
-				UARTWrite(1, buf);
+				//sprintf(buf, " %05d", n);
+				//UARTWrite(1, buf);
 			}
-			UARTWrite(1, "\n");
+			//UARTWrite(1, "\n");
 		}
-		UARTWrite(1, "\n");
+		//UARTWrite(1, "\n");
 		SendPost();
-		vTaskDelay(200);
+		vTaskDelay(50);
 	}
 }
