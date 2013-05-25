@@ -48,8 +48,6 @@ class Bodyback_Controller extends Base_Controller {
 
     public function post_index()
     {
-
-    	//$cell00 = Input::get('cell00');
     	
     	$data = Input::json();
     	

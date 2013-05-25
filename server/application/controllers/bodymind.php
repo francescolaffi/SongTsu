@@ -20,11 +20,23 @@ class Bodymind_Controller extends Base_Controller {
 
 			$frequenza_pressione = count($backs);
 
-			/*
+			$rigaAttiva = 0;
 			foreach ($backs as $back) {
-				//dovrei pesare in modo che se massaggio girando su piu' righe diminuisce la frequenza		
+				
+				$valore = 0;
+				for ($i=0; $i < 4; $i++) { 
+					for ($j=0; $j < 4; $j++) { 
+						$campo = "cell$i$j";
+						$valore += $back->$campo;
+					}
+					if ( $valore > 1 ) $rigaAttiva += 1;
+					$valore = 0;
+				}
 			}
-			*/
+
+			if ( $rigaAttiva > 1) {
+				$frequenza_pressione = $frequenza_pressione - $frequenza_pressione / 2;
+			}
 
 			$mood[0]="Relax";
 			$mood[1]="calm";
