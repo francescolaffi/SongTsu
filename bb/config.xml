@@ -25,18 +25,17 @@
 	<content src="index.html" />
 
 	<rim:navigation mode="focus" />
-    <access uri="*" subdomains="true" />
-    <feature id="blackberry.app" >
-        <param name="websecurity" value="disable" />
-    </feature>
+        <access uri="*" subdomains="true" />
+        <feature id="blackberry.app" >
+           <param name="websecurity" value="disable" />
+        </feature>
 	<feature id="blackberry.connection" />
 	<feature id="blackberry.app.event" />
 	<feature id="blackberry.ui.toast" />
-    <feature id="blackberry.ui.contextmenu" />
-	<feature id="blackberry.invoke.card" />
+        <feature id="blackberry.sensors" />
 	
 	<rim:permissions>
-		<rim:permit>read_geolocation</rim:permit>
-        <rim:permit>access_location_services</rim:permit>		
+	   <rim:permit>read_geolocation</rim:permit>
+           <rim:permit>access_location_services</rim:permit>		
 	</rim:permissions>
 </widget>

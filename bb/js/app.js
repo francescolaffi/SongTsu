@@ -15,11 +15,13 @@
  */
 
  var stitems = [];
+ var current = 0;
+ var len;
 
 /**
  *  called by the webworksready event when the environment is ready
  */
-function initApp(locstor) {
+function initApp() {
         startGeolocation();
 	authCode = null;
 	childWindow = null;
@@ -30,53 +32,31 @@ function initApp(locstor) {
 		consumerSecret: '',
 		callbackUrl: ''
 	};
-	StereomoodOAuth = OAuth(AuthOptions);
+	
+    StereomoodOAuth = OAuth(AuthOptions);
     MeTwitOAuth = OAuth(AuthOptions);
-	StereomoodOAuth.consumerKey = "338ba2b6cfc5406eff0255f399e74d69051a0bdb2"
-	locstor.setItem("stid","338ba2b6cfc5406eff0255f399e74d69051a0bdb2");
-	StereomoodOAuth.consumerSecret = "4cbaf0d53abfd235814612e5657214fd";
-	locstor.setItem("stid","4cbaf0d53abfd235814612e5657214fd");
-	StereomoodOAuth.callbackUrl = 'http://www.steromood.com/api/oauth/authenticate';
-	MeTwitOAuth.consumerKey	= locstor.getItem("meid");
-	MeTwitOAuth.consumerSecret = locstor.getItem("mepwd");
-    var webip = locstor.getItem("webip");
-    var lcunknown = locstor.getItem("unknown");
-    var lcsunclear = locstor.getItem("sun-clear");
-	var lcrainy = locstor.getItem("rainy");
-	var lcstormy = locstor.getItem("stormy");
-    var lcsnowy = locstor.getItem("snowy");
-    var lccloudy = locstor.getItem("cloudy");
-    var lchailing = locstor.getItem("hailing");
-	var lcheavyseas = locstor.getItem("heavyseas");
-	var lccalmseas = locstor.getItem("calmseas");
-	var lcfoggy = locstor.getItem("foggy");
-	var lcsnowy = locstor.getItem("snowy");
-	var lcsnowflurries = locstor.getItem("snowflurries");
-    var lcwindy = locstor.getItem("windy");
+    StereomoodOAuth.consumerKey = "338ba2b6cfc5406eff0255f399e74d69051a0bdb2"
+    localStorage.setItem("stid","");
+    StereomoodOAuth.consumerSecret = "4cbaf0d53abfd235814612e5657214fd";
+    localStorage.setItem("stpwd","");
+    StereomoodOAuth.callbackUrl = 'http://www.steromood.com/api/oauth/authenticate';
+    MeTwitOAuth.consumerKey	= localStorage.getItem("meid");
+    MeTwitOAuth.consumerSecret = localStorage.getItem("mepwd");
+    var webip = localStorage.getItem("webip");
+    var lcunknown = localStorage.getItem("unknown");
+    var lcsunclear = localStorage.getItem("sun-clear");
+    var lcrainy = localStorage.getItem("rainy");
+    var lcstormy = localStorage.getItem("stormy");
+    var lcsnowy = localStorage.getItem("snowy");
+    var lccloudy = localStorage.getItem("cloudy");
+    var lchailing = localStorage.getItem("hailing");
+    var lcheavyseas = localStorage.getItem("heavyseas");
+    var lccalmseas = localStorage.getItem("calmseas");
+    var lcfoggy = localStorage.getItem("foggy");
+    var lcsnowy = localStorage.getItem("snowy");
+    var lcsnowflurries = localStorage.getItem("snowflurries");
+    var lcwindy = localStorage.getItem("windy");
 }
-
-
-/**
- *  Set click handlers for the OAuth Start button
- *  Note: window.open can only be triggered in this way, you must set a click handler for this.
- */
-function setClickHandlers() {
-	var link = document.getElementById('btnAccess');
-	link.addEventListener('click', function(e) {
-
-		// if the childWindow is already open, don't allow user to click the button
-		if(childWindow !== null) {
-			return false;
-		}
-
-		e.preventDefault();
-		toast('Fetching access token...');
-		setTimeout(function() {
-			getAccessToken();
-		}, 500);
-	});
-}
-
 
 /**
  *  Start the OAuth process by opening a childWindow, and directing the user to authorize the app
@@ -258,22 +238,44 @@ function checkMeteo(lat,lon) {
 
 function checkSongs(mood) {
      if (!(mood == '')) {
-	    var url = "http://www.stereomood.com/api/search.xml?api_key=338ba2b6cfc5406eff0255f399e74d69051a0bdb2&type=mood&q=" + mood ;
+	    var url = "http://www.stereomood.com/api/search.json?api_key=338ba2b6cfc5406eff0255f399e74d69051a0bdb2&type=mood&q=" + mood ;
 	    $.ajax({
 		   type: 'GET',
 		   url: url,
-           datatype: 'xml',
-		   success: function(xml) {
-//		      xmldoc=XML.load(xml);
-			  $(xml).find("category").each(function() {
-              stitems.push($(this).find("audio_url").text());
-		    })},
+		   dataType: 'json',
+		   success: function(data) {
+//		      objdata = JSON.parse(data);
+			  for (var i = 0 ; i < data.songs.length; i++ ){
+				stitems.push(data.songs[i].audio_url);
+			  }
+			  len = data.songs.length;
+            PlayMusic();
+		    },
 
 		error: function(data) {
 //			alert('Error checking in!' + data.text);
 		}
 	});
      }
+}
+
+function PlayMusic() {
+	audio = document.getElementsByTagName('audio')[0];
+    run(stitems[0], audio);
+    audio.addEventListener('ended',function(e){
+        current++;
+        if(current == len){
+            current = 0;
+            link = stitem[0];
+        }else{
+        link = stitems[current];   
+        }
+        run(link,audio);
+    });
+}
+function run(link, player){
+        player.src = link;
+        player.play();
 }
 
 function CheckMood () {
@@ -355,60 +357,21 @@ function geoFail() {
   myLong = -80.522372;
 }
 
-/**
- *  google maps
- */
-
-// initialize the map
-function initGoogleMaps() {
-   var geocoder, map;
-   geocoder = new google.maps.Geocoder();
-   var myLocation = new google.maps.LatLng(myLat, myLong);
-   var mapOptions = {
-      zoom: 8,
-      center: myLocation,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-      }
-   map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions), timeoutSeconds = 4, usingMap = false;
-                                   
-   geocoder.geocode( function(results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-         map.setCenter(results[0].geometry.location);
-         var marker = new google.maps.Marker({
-            map: map, 
-            position: results[0].geometry.location
-         });
-         } else {
-            alert("The map failed because: " + status);
-         }
-   });
-}
-
-
-// create a marker / push-pin
-function createGoogleMarker(place) {
-  var placeLoc = place.geometry.location;
-  var marker = new google.maps.Marker({
-    map: googleMap,
-    position: place.geometry.location
-  });
-}
-
 function doSMSave() {
 var lcid = document.getElement("gsmood").id;
-    locstor.setItem(lcunknown,lcid);
-    locstor.setItem(lcsunclear,lcid);
-	locstor.setItem(lcrainy,lcid);
-	locstor.setItem(lcstormy,lcid);
-    locstor.setItem(lcsnowy,lcid);
-    locstor.setItem(lccloudy,lcid);
-    locstor.setItem(lchailing,lcid);
-	locstor.setItem(lcheavyseas,lcid);
-	locstor.setItem(lccalmseas,lcid);
-	locstor.setItem(lcfoggy,lcid);
-	locstor.setItem(lcsnowy,lcid);
-	locstor.setItem(lcsnowflurries,lcid);
-    locstor.setItem(lcwindy,"");
+    localStorage.setItem(lcunknown,lcid);
+    localStorage.setItem(lcsunclear,lcid);
+	localStorage.setItem(lcrainy,lcid);
+	localStorage.setItem(lcstormy,lcid);
+    localStorage.setItem(lcsnowy,lcid);
+    localStorage.setItem(lccloudy,lcid);
+    localStorage.setItem(lchailing,lcid);
+	localStorage.setItem(lcheavyseas,lcid);
+	localStorage.setItem(lccalmseas,lcid);
+	localStorage.setItem(lcfoggy,lcid);
+	localStorage.setItem(lcsnowy,lcid);
+	localStorage.setItem(lcsnowflurries,lcid);
+    localStorage.setItem(lcwindy,"");
 }
 
 // initialize accelerometer
@@ -426,6 +389,14 @@ function initSensors() {
 	// start the event listener for the sensors callback
 	blackberry.event.addEventListener("deviceaccelerometer", accelCallback);
 }
+
+function doParamSave(){
+   localStorage.setItem("stid", document.querySelector('#stid').value );
+   localStorage.setItem("stpwd", document.querySelector('#stpwd').value);
+   localStorage.setItem("meid", document.querySelector('#meid').value);
+   localStorage.setItem("mepwd", document.querySelector('#mepwd').value);
+   localStorage.setItem("webip", document.querySelector('#webip').value);
+}	
 
 
 // accelerometer callback
