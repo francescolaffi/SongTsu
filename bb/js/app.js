@@ -15,9 +15,12 @@
  */
 
  var stitems = [];
+ var pcitems = [];
  var current = 0;
  var len;
-
+ var pccurrent = 0;
+ var currentMood ="";
+ 
 /**
  *  called by the webworksready event when the environment is ready
  */
@@ -178,32 +181,6 @@ function getOAuthToken(oauthToken, oauthVerifier) {
 }
 
 
-/**
- *  get authenticated users feed
- */
-function getFeed() {
-	toast('Loading feed...');
-	$('#content p').remove();
-
-	StereomoodOAuth.get('https://api.twitter.com/1.1/statuses/user_timeline.json',
-
-	// success
-	function(data) {
-		var tweets = JSON.parse(data.text);
-
-		// show the last 10 tweets from the users timeline
-		for(var i = 0; i < 11; i++) {
-			$('#content').append('<p>' + tweets[i].text + '</p>');
-		}
-	},
-
-	// failure
-	function(data) {
-		alert('Error getting timeline: ' + e);
-		return false;
-	});
-}
-
 function checkMeteo(lat,lon) {
 
 
@@ -247,6 +224,10 @@ function checkSongs(mood) {
 //		      objdata = JSON.parse(data);
 			  for (var i = 0 ; i < data.songs.length; i++ ){
 				stitems.push(data.songs[i].audio_url);
+				stitems.push(data.songs[i].title);
+				stitems.push(data.songs[i].image_url);
+				stitems.push(data.songs[i].album);
+				stitems.push(data.songs[i].artist);				
 			  }
 			  len = data.songs.length;
             PlayMusic();
@@ -261,16 +242,29 @@ function checkSongs(mood) {
 
 function PlayMusic() {
 	audio = document.getElementsByTagName('audio')[0];
+	title = document.getElementById('stitle');
+	songname = document.getElementById('songname');
+	simage = document.getElementById('simg');
+    songname.innerHTML = stitems[1];
+	simage.src = stitems[2];
+	title.innerHTML = stitems[3];
     run(stitems[0], audio);
     audio.addEventListener('ended',function(e){
-        current++;
-        if(current == len){
+        current= current+5;
+        if(current == (len*5)){
             current = 0;
-            link = stitem[0];
+            link = stitems[0];
+            songname.innerHTML = stitems[1];
+	        simage.src = stitems[2];
+	        title.innerHTML = stitems[3];			
         }else{
-        link = stitems[current];   
+            link = stitems[current];   
+            songname.innerHTML = stitems[current+1];
+	        simage.src = stitems[current+2];
+	        title.innerHTML = stitems[current+3];					
         }
         run(link,audio);
+		CheckMood();
     });
 }
 function run(link, player){
@@ -279,11 +273,14 @@ function run(link, player){
 }
 
 function CheckMood () {
-checkSongs('Relax');
+if (currentMood == "") {
+      checkSongs('Relax');
+	  currentMood = "Relax";
+	  }
 /*
 $.ajax({
 		type: 'GET',
-		url: 'http://192.168.1.200:8000/bodymind',
+		url: 'http://monitorzc.iriscouch.com/so_index/_design/index/gsmoods.html',
 		   success: function(data) {
 		      var risp = JSON.parse(data);
 			  checkSongs(risp[1]);
@@ -295,11 +292,31 @@ $.ajax({
 }); */
 }
 
-/**
- *  display a toast message to the user
- */
-function toast(msg) {
-//	blackberry.ui.toast.show(msg);
+function checkSongs(mood) {
+     if (!(mood == '')) {
+	    var url = "http://www.stereomood.com/api/search.json?api_key=338ba2b6cfc5406eff0255f399e74d69051a0bdb2&type=mood&q=" + mood ;
+	    $.ajax({
+		   type: 'GET',
+		   url: url,
+		   dataType: 'json',
+		   success: function(data) {
+//		      objdata = JSON.parse(data);
+			  for (var i = 0 ; i < data.songs.length; i++ ){
+				stitems.push(data.songs[i].audio_url);
+				stitems.push(data.songs[i].title);
+				stitems.push(data.songs[i].image_url);
+				stitems.push(data.songs[i].album);
+				stitems.push(data.songs[i].artist);				
+			  }
+			  len = data.songs.length;
+            PlayMusic();
+		    },
+
+		error: function(data) {
+//			alert('Error checking in!' + data.text);
+		}
+	});
+     }
 }
 
 
@@ -372,6 +389,39 @@ var lcid = document.getElement("gsmood").id;
 	localStorage.setItem(lcsnowy,lcid);
 	localStorage.setItem(lcsnowflurries,lcid);
     localStorage.setItem(lcwindy,"");
+}
+
+function checkPic() {
+     
+	    var url = "http://www.panoramio.com/map/get_panoramas.php?set=public&from=0&to=20";
+	    $.ajax({
+		   type: 'GET',
+		   url: url,
+		   dataType: 'json',
+		   success: function(data) {
+//		      objdata = JSON.parse(data);
+			  for (var i = 0 ; i < 20; i++ ){
+				pcitems.push(data.photos[i].photo_file_url);
+			  }
+			  len = 20;
+            changePic();
+		    },
+
+		error: function(data) {
+			alert('Error checking in!' + data.text);
+		}
+	});
+}
+
+function changePic() {
+    simage = document.getElementById('ppic');
+    if(pccurrent == 20){
+       pccurrent = 0;
+	   simage.src = pcitems[0];
+        }else{
+		pccurrent++;
+	   simage.src = pcitems[pccurrent];
+    };
 }
 
 // initialize accelerometer

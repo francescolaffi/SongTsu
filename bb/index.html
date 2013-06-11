@@ -30,15 +30,30 @@
          body {
             min-height: 500px;
               }
-         .center {
-            text-align: center;
-            }
-         h3 {
-            color: #006A3C;
-            }
-         #map-canvas {
-            height: 400px;
-            }
+	    #imglogo {
+                 max-width: 10%;
+				 max-height: 10%;
+				 align: center;
+				 valign: center;				 
+             }
+	    .logo {
+				 z-index : 2;
+				 background-color:rgba(0,0,0,0.6);
+				 color: white;
+				 align: center;
+				 valign: center;				 				 
+                 text-align: center;				 
+             }
+			 
+		#dpic {
+           width: 100%;
+           height: 100%;
+           position: absolute;
+           top: 0;
+           left: 0;
+		   }
+}
+			 
       </style>
    </head>
    <body>
@@ -60,7 +75,8 @@
 //                       audio.controls = true;
 //						element.querySelector('#audio').appendChild(audio);
 //						element.querySelector('#audio').visible = false;
-                        CheckMood();						
+                        CheckMood();	
+                        checkPic();						
 //						}
 			},
                             	
@@ -71,6 +87,9 @@
 			       bb.pushScreen('setupBoth.html', 'configBoth');
 			    }, false);
 		     } else if (id === 'menu') {
+			 	setInterval(function(){
+				   changePic();
+			    }, 60000);
                                     //function doAlternateStuff() {
 /*									   
                                        var startPos;

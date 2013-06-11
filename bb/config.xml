@@ -21,7 +21,7 @@
 
 	<name>Whymca hackreality 2</name>
 	<author>I BonziEmiliani : Lucio - Stefano - Francesco - Yuri</author>
-	<icon src="images/iconWhite.png"/>
+	<icon src="img/iconWhite.png"/>
 	<content src="index.html" />
 
 	<rim:navigation mode="focus" />
