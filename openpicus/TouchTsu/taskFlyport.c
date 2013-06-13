@@ -1,14 +1,12 @@
 #include "taskFlyport.h"
-#include "rtcc.h"
 //define to have a visual blink in case of changed parameters!
 #define BlinkParams
 
 // CONFIGURATION PAGE Variable:
 extern BOOL ParamSet;
 // RTCC VARIABLES:
-extern BOOL alarmflag;
-t_RTCC myrtcc;
-t_RTCC myalarm;
+struct tm myrtcc;
+struct tm myalarm;
 // WiFi Scan Variables:
 extern BOOL ScanCompleted;		// This var is declared in WiFi events
 extern BOOL startScan;
@@ -37,17 +35,18 @@ void FlyportTask()
 	IOInit(19, out);				// to be sure that LED4 is output
 
 	// Set RTCC
-	myrtcc.year = 12; //last two year number
-	myrtcc.month = 2;
-	myrtcc.dweek = 4; //sunday is 0
-	myrtcc.day = 2;
-	myrtcc.hour = 00;
-	myrtcc.min = 00;
-	myrtcc.sec = 00;
+  myrtcc.tm_year = 112; // year - 1900
+  myrtcc.tm_mon = 1; // month - 1
+  myrtcc.tm_mday = 1;
+  myrtcc.tm_hour = 0;
+  myrtcc.tm_min = 0;
+  myrtcc.tm_sec = 0;
+  myrtcc.tm_wday = WEDNESDAY;
+   
 	// Create alarm configuration
 	myalarm = myrtcc;
-	myalarm.sec = myalarm.sec + setuptimeSec;
-	myalarm.min = myalarm.min + setuptimeMin;
+	myalarm.tm_sec = myalarm.tm_sec + setuptimeSec;
+	myalarm.tm_min = myalarm.tm_min + setuptimeMin;
 	vTaskDelay(100);
 	ScanCompleted = FALSE;
 	scanningResultsReady = FALSE;
@@ -91,14 +90,14 @@ void FlyportTask()
 	vTaskDelay(200); // wait for DHCP...
 	
 	// Write settings on internal registers
-	RTCCWrite(&myrtcc);
+	RTCCSet(&myrtcc);
 	// Set Alarm configuration to internal registers
-	RTCCSetAlarm(&myalarm, REPEAT_INFINITE, EVERY_TEN_MIN);
+	RTCCAlarmConf(&myalarm, REPEAT_NO, EVERY_TEN_MIN, NO_ALRM_EVENT);
 	// Active alarm
-	RTCCRunAlarm(1); // 1 turn on, 0 turn off
+	RTCCAlarmSet(ON); // 1 turn on, 0 turn off
 	UARTWrite(1, "RTCC setup completed!\r\nentering inside the RTCC timed loop...\r\n");
 	
-	while(alarmflag == 0)
+	while(!RTCCAlarmStat())
 	{
 		// wait for the alarm... setup only configuration!
 		IOPut(21, toggle);
@@ -111,7 +110,7 @@ void FlyportTask()
 		}
 	}
 	IOPut(21, on);
-	RTCCRunAlarm(0); // turn off alarm now...
+	RTCCAlarmSet(OFF); // turn off alarm now...
 	WFDisconnect();
 	while (WFStatus != NOT_CONNECTED);
 	vTaskDelay(50);
