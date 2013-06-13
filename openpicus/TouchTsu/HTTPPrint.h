@@ -19,11 +19,54 @@ extern HTTP_STUB httpStubs[MAX_HTTP_CONNECTIONS];
 extern BYTE curHTTPID;
 
 void HTTPPrint(DWORD callbackID);
+void HTTPPrint_led(WORD);
+void HTTPPrint_btn(WORD);
+void HTTPPrint_pot(WORD);
+void HTTPPrint_scan(WORD);
 
 void HTTPPrint(DWORD callbackID)
 {
 	switch(callbackID)
 	{
+        case 0x00000009:
+			HTTPPrint_led(4);
+			break;
+        case 0x0000000a:
+			HTTPPrint_led(3);
+			break;
+        case 0x0000000b:
+			HTTPPrint_led(2);
+			break;
+        case 0x0000000c:
+			HTTPPrint_led(1);
+			break;
+        case 0x00000017:
+			HTTPPrint_led(0);
+			break;
+        case 0x00000018:
+			HTTPPrint_btn(0);
+			break;
+        case 0x00000019:
+			HTTPPrint_btn(1);
+			break;
+        case 0x0000001a:
+			HTTPPrint_btn(2);
+			break;
+        case 0x0000001b:
+			HTTPPrint_btn(3);
+			break;
+        case 0x0000004a:
+			HTTPPrint_btn(4);
+			break;
+        case 0x0000004b:
+			HTTPPrint_pot(0);
+			break;
+        case 0x0000004c:
+			HTTPPrint_pot(1);
+			break;
+        case 0x00000051:
+			HTTPPrint_scan(0);
+			break;
 		default:
 			// Output notification for undefined values
 			TCPPutROMArray(sktHTTP, (ROM BYTE*)"!DEF", 4);

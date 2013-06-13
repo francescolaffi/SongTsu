@@ -154,7 +154,7 @@
  *   To clear EEPROM, hold BUTTON0, reset the board, and continue
  *   holding until the LEDs flash.  Release, and reset again.
  */
-#define MY_DEFAULT_HOST_NAME			"PICUS"
+#define MY_DEFAULT_HOST_NAME			"TOUCH_TSU"
 
 #define MY_DEFAULT_MAC_BYTE1            (0x00)	// Use the default of
 #define MY_DEFAULT_MAC_BYTE2            (0x04)	// 00-04-A3-00-00-00 if using

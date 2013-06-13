@@ -4,6 +4,7 @@
 /****************************************************************************
   FUNCTIONS TO HANDLE THE WIFI EVENTS
 ****************************************************************************/
+BOOL ScanCompleted = FALSE;
 
 //	CONNECTION SUCCESSFUL
 void OnConnectionSuccessful(UINT8 ev, UINT16 evinfo)
@@ -65,5 +66,6 @@ void OnScanResult(UINT8 ev, UINT16 evinfo)
 	UARTWrite(1,buf);
 	UARTWrite(1,"results\r\n");
 	#endif
+	ScanCompleted = TRUE;
 }
 
