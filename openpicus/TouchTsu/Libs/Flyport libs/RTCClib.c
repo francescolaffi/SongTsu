@@ -56,7 +56,6 @@
  **************************************************************************/
 /// @cond debug
 #include "RTCClib.h"
-#ifdef USE_RTCC_LIB
 
 static WORD buffer = 0;
 BOOL alarmflag = FALSE;
@@ -81,12 +80,12 @@ is triggered.
 
 
  /// @cond debug
-/*-------------------------------------------------------------------------------------
-| Function: 		void __attribute((interrupt,auto_psv)) _RTCCInterrupt()		        |
+/*---------------------------------------------------------------------------------------
+| Function: 	void __attribute((interrupt,auto_psv)) _RTCCInterrupt()		            |
 | Description: 	ISR for the RTCC alarm. If a callback function was set, it is executed.	|
 | Returns:		-														   				|
 | Parameters:	-													                	|
--------------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------------------*/
 void __attribute((interrupt,auto_psv)) _RTCCInterrupt()
 {
 	while (RCFGCALbits.RTCSYNC == 1);
@@ -102,7 +101,7 @@ void __attribute((interrupt,auto_psv)) _RTCCInterrupt()
 /// @endcond
 
 /**
- * Returns the status of the alarm event. The function can be polled coninously to get the alarm trigger.
+ * Returns the status of the alarm event. The function can be polled continuously to get the alarm trigger.
  * \param None
  * \return the status of the alarm event:
   <UL>
@@ -120,6 +119,7 @@ BOOL RTCCAlarmStat()
 	else
 		return FALSE;
 }
+
 
 /**
  * Sets the date/time for the RTCC and enables the RTCC module.
@@ -172,36 +172,29 @@ void RTCCGet(struct tm* rtcc)
 	rtcc->tm_sec = _BtoD(buffer);
 }
 
-  /*----------------------------------------------------------------------------------------
-  |	Function: 		RTCCSetAlarm(struct tm* rtcc, int repeats, BYTE mask)					   |
-  | Description: 	With this function you can configure the RTCC Alarm.	   			   |
-  | Returns:		-														   			   |
-  | Parameters:		struct tm* rtcc		 												   |
-  |																						   |
-  |				 	int repeats - number of repeats	or								   	   |  
-  |				 	  	      	  -	REPEAT_NO											   |
-  |				 	  	      	  -	REPEAT_INFINITE										   | 
-  |																						   |
-  |					BYTE mask - use these definitions:									   |
-  |							    - EVERY_HALF_SEC								   		   |
-  |							    - EVERY_SEC									   			   |
-  |							    - EVERY_TEN_SEC										  	   |
-  |							    - EVERY_MIN												   |
-  |							    - EVERY_TEN_MIN											   |
-  |							    - EVERY_HOUR											   |
-  |							    - EVERY_DAY												   |
-  |							    - EVERY_WEEK											   |
-  |							    - EVERY_MONTH											   |
-  |							    - EVERY_YEAR											   |
-  ----------------------------------------------------------------------------------------*/
+  
 /**
  * Function to configure the alarm. It's possible to set the interval for the alarm and if must be repeated continously.
   * \param repeats - Specifies how many time the alarm must be repeated:
-   <UL>
+ <UL>
 	<LI><B>REPEAT_NO</B> - the alarm must not repeated.</LI> 
 	<LI><B>an int comprised between 1-254</B> - the number of times alarm must be repeated.</LI> 
 	<LI><B>REPEAT_INFINITE</B> - the alarm must be repeated forever.</LI> 
  </UL>
+ * \param how often alarm should be raised
+ <UL>
+	<LI><B>EVERY_HALF_SEC</B> alarm is raised every half second</LI>
+	<LI><B>EVERY_SEC</B> alarm is raised every second</LI>
+	<LI><B>EVERY_TEN_SEC</B> alarm is raised every 10 seconds</LI>
+	<LI><B>EVERY_MIN</B> alarm is raised every minute</LI>
+	<LI><B>EVERY_TEN_MIN</B> alarm is raised every 10 minutes</LI>
+	<LI><B>EVERY_HOUR</B> alarm is raised every hour</LI>
+	<LI><B>EVERY_DAY</B> alarm is raised every day</LI>
+	<LI><B>EVERY_WEEK</B> alarm is raised every week</LI>
+	<LI><B>EVERY_MONTH</B> alarm is raised every month</LI>
+	<LI><B>EVERY_YEAR</B> alarm is raised every year</LI>
+ </UL>
+ * \param custom user function to execute when alarm event is raised. <B>please use NO_ALRM_EVENT</B> to ignore.
  * \return None
  */
 void RTCCAlarmConf(struct tm* rtcc, int repeats, BYTE whenToRaise, void (*fptr)())
@@ -255,14 +248,15 @@ void RTCCAlarmConf(struct tm* rtcc, int repeats, BYTE whenToRaise, void (*fptr)(
 	xTaskResumeAll();
 }
 
-  /*-------------------------------------------------------------------------------------
-  |	Function: 		RTCCRunAlarm(BYTE run)                  		 		   			|
-  | Description: 	This function activates or deactivates the alarm.   	   			|
-  | Returns:		-														   			|
-  | Parameters:		BYTE run - 0 Off										 			|
-  |							   1 On														|
-  -------------------------------------------------------------------------------------*/
-
+/**
+ * Activates or deactivates the alarm.
+  * \param run:
+   <UL>
+	<LI><B>FALSE</B> Deactivates alarm</LI> 
+	<LI><B>TRUE</B> Activates alarm</LI> 
+   </UL>
+ * \return None
+ */
 void RTCCAlarmSet(BYTE run) 
 {	
 	if (run != ALCFGRPTbits.ALRMEN )
@@ -303,4 +297,3 @@ static BYTE _DtoB(BYTE dec)
 	
 	return dtob;
 }
-#endif

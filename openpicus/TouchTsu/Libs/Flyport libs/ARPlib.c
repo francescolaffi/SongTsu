@@ -68,7 +68,7 @@ but usually this operation in managed by TCP-IP Stack.
 static int ToSend = 0; 
 
 /**
- * ARPResolveMAC - Force an arp request for specific IP address
+ * Force an arp request for specific IP address
  * \param ipaddr IP address
  */
 BYTE ARPResolveMAC(char ipaddr[])

@@ -114,7 +114,7 @@ BOOL GenericSMTP(int fSMTP)
 
 
 /**
- * SMTPStart - Initializes the SMTP module. If the client is already in use, the initialization will not be possible.
+ * Initializes the SMTP module. If the client is already in use, the initialization will not be possible.
  * \param None
  * \return TRUE: the SMTP client was correctly initialized.
  * \return FALSE: the SMTP client wasn't initialized. Maybe it's already used
@@ -135,7 +135,7 @@ BOOL GenericSMTP(int fSMTP)
 
 
 /**
- * SMTPSetServer - Sets all the parameters for the SMTP remote server (server name, username, password and port).
+ * Sets all the parameters for the SMTP remote server (server name, username, password and port).
  * \param servparam the parameter to set. Available list is the following:<BR>
  <UL>
 	<LI><B>SERVER_NAME:</B> the name of the SMTP server.</LI>
@@ -211,11 +211,8 @@ int cSMTPSetServer()
  /// @endcond
  
  
-//****************************************************************************
-//	28 - SMTPSetMsg - Sets all the parameter for the email message to send
-//****************************************************************************
 /**
- * SMTPSetMsg - Sets all the parameters for the email message to send (the sender, the destination address, the cc and bcc addresses, email subject and body). 
+ * Sets all the parameters for the email message to send (the sender, the destination address, the cc and bcc addresses, email subject and body). 
  * \param msgparam the parameter to set. Available list is the following:<BR>
  <UL>
 	<LI><B>MSG_TO:</B> the destination address.</LI>
@@ -307,7 +304,7 @@ int cSMTPSetMsg()
  
  
 /**
- * SMTPSend - Once all the connection and message settings are done, it's possible to send the desired email message with this command
+ * Once all the connection and message settings are done, it's possible to send the desired email message with this command
  * \param None
  * \return TRUE: the message was correctly sent.
  * \return FALSE: there was an error. Maybe the SMTP client is still busy in sending another message, or it's not initialized.
@@ -332,7 +329,7 @@ int cSMTPSend()
 
 
 /**
- * SMTPBusy - Verifies if the SMTP client is busy perfoming some action. Until the client is busy is not possible to other SMTP commands.
+ * Verifies if the SMTP client is busy perfoming some action. Until the client is busy is not possible to other SMTP commands.
  * \param None
  * \return TRUE: the client is busy.
  * \return FALSE: the client is not performing any action, and can be used by the firmware.
@@ -355,12 +352,6 @@ int cSMTPBusy()
  /// @endcond
 
 
-/**
- * SMTPStop (deprecated) - Closes the SMTP client and gives a report about email sending. To send another email SMTP must be restarted.
- * \param None
- * \return TRUE: the email was correctly sent.
- * \return FALSE: an error occured sending the email.
- */
 BOOL SMTPStop()
 {
 	return GenericSMTP(31);
@@ -382,7 +373,7 @@ int cSMTPStop()
  /// @endcond
  
  /**
- * SMTPReport - Closes the SMTP client and gives a report about email sending, reporting the SMTP server response code. To send another email SMTP must be restarted.
+ * Closes the SMTP client and gives a report about email sending, reporting the SMTP server response code. To send another email SMTP must be restarted.
  * \param None
  * \return the server answer code received by Flyport.
  * 

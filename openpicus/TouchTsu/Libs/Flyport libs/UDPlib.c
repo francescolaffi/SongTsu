@@ -71,39 +71,50 @@ UDP provides the commands to manage UDP connections. Flyport supports the creati
 #if MAX_UDP_SOCKETS_FREERTOS>0
 
 static int ToSend = 0; 
+extern BOOL MACLinked;
+
 /// @cond debug
 //*****************************************************************************************
 // Only internal use:
 // 35 - UDPGenericOpen and callback function: opens a generic UDP socket
 //*****************************************************************************************
-BYTE UDPGenericOpen(char localport[], NODE_INFO* remhost, char remoteport[] )
+BYTE UDPGenericOpen(char localport[], DWORD remhost, char remoteport[], BYTE connType )
 {
 	BYTE retsock;
-	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
+	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);	//	xSemFrontEnd TAKE
 	xErr = 0;
 	if (xFrontEndStat == 0)
 	{	
+		//	OpCode and requested return value from the stack
 		xFrontEndStatRet = 2;	
-		ToSend=35;
-		xUDPLocalPort = atoi(localport);
-		xUDPRemotePort = atoi(remoteport);
-		udpIPAddress = remhost;
-		xQueueSendToBack(xQueue,&ToSend,0);					//	Send COMMAND to the stack
+		ToSend = 35;
+		
+		//	Passing function parameters
+		//	The remote host type is always UDP_OPEN_RAM_HOST, so it's passed as pointer to a char
+		xUDPLocalPort = atoi(localport);				//	Local port is set to 0 by calling functions, so it's managed by TCP/IP stack
+		xUDPRemotePort = atoi(remoteport);				//	Remote port is passed directly by calling function				
+		xUDPRemoteHost = (DWORD)(unsigned int)remhost;	//	Double casting to make compiler happy
+		xByte2 = connType;								// Connection type, containg the format of the server
+		
+		//	Queue and status setting, callback is ready to be fired when semaphore is released
+		xQueueSendToBack(xQueue,&ToSend,0);				//	Send COMMAND to the stack
 		xFrontEndStat = 1;
-		xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE
+		xSemaphoreGive(xSemFrontEnd);					//	xSemFrontEnd GIVE
 	}
 	else
 	{
-		xErr = 35; //ToSend;
+		xErr = 35; 	// Error code = ToSend, it can be changed from callback function to manage different cases
 		xSemaphoreGive(xSemFrontEnd);
 		taskYIELD();
-		return 0;//Socket creation error
+		return 0;	//Socket creation error
 	}
-	while (xFrontEndStat != 2);								//	Waits for stack answer
-	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
-	retsock = callbackUdpSocket;
-	xFrontEndStat = 0;
-	xSemaphoreGive(xSemFrontEnd);							//	xSemFrontEnd GIVE
+	
+	while (xFrontEndStat != 2);							//	Waits for stack answer
+	//	Stack performed the callback, reading the answer
+	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);	//	xSemFrontEnd TAKE
+	retsock = callbackUdpSocket;						//	The returning UDP socket, opened by callback
+	xFrontEndStat = 0;		
+	xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE
 	taskYIELD();
 	return retsock;
 }
@@ -115,7 +126,8 @@ int cUDPGenericOpen()
 	UDP_SOCKET tmp_sock = INVALID_UDP_SOCKET;
 
 	udpInt = 0;
-	tmp_sock = UDPOpen(xUDPLocalPort, udpIPAddress, xUDPRemotePort);
+	//tmp_sock = UDPOpen(xUDPLocalPort, xUDPRemoteHost, xUDPRemotePort);
+	tmp_sock = UDPOpenEx(xUDPRemoteHost, xByte2, xUDPLocalPort, xUDPRemotePort);
 	if (tmp_sock == INVALID_UDP_SOCKET)
 	{
 		callbackUdpSocket = 0;
@@ -145,7 +157,7 @@ int cUDPGenericOpen()
 
 
 /**
- * UDPLocalPort - Returns the local port of the specified UDP socket. It can be useful when using a socket as client.
+ * Returns the local port of the specified UDP socket. It can be useful when using a socket as client.
  * \param udplocalsocket the number of the UDP socket.
  * \return The number of current socket, or 0 if an error occured during the opening of the socket.
  */
@@ -158,47 +170,42 @@ WORD UDPLocalPort (BYTE udplocalsocket)
 
 
 /**
- * UDPServerOpen - Create a UDP server on specified port
+ * Create a UDP server on specified port
  * \param udpport Local Port for UDP server
  * \return The number of current socket, or 0 if an error occured during the opening of the socket.
  */
 BYTE UDPServerOpen (char udpport[])
 {			
-	return UDPGenericOpen(udpport, NULL , udpport);
+	return UDPGenericOpen(udpport, 0 , udpport, UDP_OPEN_SERVER);
 }
 
 /**
- * UDPClientOpen - Create a UDP client on specified port, try more time for arp request.
+ * Create a UDP client on specified port, try more time for arp request.
  * \param udpaddr IP address of server
  * \param udpport Remote Port of UDP server
  * \return The number of current socket or 0 if an error occured during the opening of the socket.
  */
-BYTE UDPClientOpen (char *udpaddr, char udpport[])
+BYTE UDPClientOpen (char udpaddr[], char udpport[])
 {
-    #if defined (FLYPORT)
-	if (WFStatus != TURNED_OFF)
-    #endif
+    #if defined (FLYPORT_WF)
+	if (_WFStat != TURNED_OFF)
+	#elif defined (FLYPORT_ETH)
+	if (MACLinked)
+	#endif
 	{
-		static NODE_INFO Server;
-		StringToIPAddress((BYTE*) udpaddr, &Server.IPAddr);
-		ARPResolveMAC((char*) &(Server.IPAddr));
-		vTaskDelay(30);
-		if(ARPIsResolved(&Server.IPAddr, &Server.MACAddr))
-			return UDPGenericOpen(0, &Server, udpport);
-		else 
-			return 0;
+		return UDPGenericOpen(0, (DWORD)(unsigned int)udpaddr, udpport, UDP_OPEN_RAM_HOST);
 	}
 	return 0;
 }
 
 /**
- * UDPBroadcastOpen - Create a UDP broadcast on specified port
+ * Create a UDP broadcast on specified port
  * \param udpport Remote Port for UDP
  * \return The number of current socket or 0 if an error occured during the opening of the socket.
  */
 BYTE UDPBroadcastOpen (char udpport[])
 {			
-	return UDPGenericOpen(0, NULL, udpport);
+	return UDPGenericOpen(0, NULL, udpport, UDP_OPEN_RAM_HOST);
 }
 
 
@@ -216,6 +223,7 @@ BYTE UDPGenericClose(BYTE sock)
 		xFrontEndStatRet = 2;
 		ToSend=37;
 		callbackUdpSocket = sock;
+		
 		xQueueSendToBack(xQueue,&ToSend,0);					//	Send COMMAND to the stack
 		xFrontEndStat = 1;
 		xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE	
@@ -246,7 +254,7 @@ int cUDPGenericClose()
 
 
 /**
- * UDPServerClose - Closes UDP Server socket
+ * Closes UDP Server socket
  * \param sock UDP Socket number
  */
 BYTE UDPServerClose(BYTE sock) 
@@ -255,7 +263,7 @@ BYTE UDPServerClose(BYTE sock)
 }
 
 /**
- * UDPClientClose - Closes UDP Client socket
+ * Closes UDP Client socket
  * \param sock UDP Socket number
  */
 BYTE UDPClientClose(BYTE sock) 
@@ -264,7 +272,7 @@ BYTE UDPClientClose(BYTE sock)
 }
 
 /**
- * UDPRxLen - Reads the length of the RX buffer
+ * Reads the length of the RX buffer
  * \param sock UDP socket number
  * \return The number of char that can be read from the UDP buffer.
  */
@@ -274,7 +282,7 @@ WORD UDPRxLen(BYTE sock)
 }
 
 /**
- * UDPRxFlush - Empty the RX buffer
+ * Empty the RX buffer
  * \param sock UDP socket number
  * \return none
  */
@@ -289,7 +297,7 @@ void UDPRxFlush(BYTE sock)
 }
 
 /**
- * UDPRxOver - Checks if a overflow was reached in UDP RX buffer, and clear the flag. 
+ * Checks if a overflow was reached in UDP RX buffer, and clear the flag. 
  * \param sock UDP socket number
  * \return 0 = no overflow, 1 = overflow reached
  */
@@ -305,7 +313,7 @@ BOOL UDPRxOver(BYTE sock)
 }
 
 /**
- * UDPRead - Reads lstr bytes from the RX buffer
+ * Reads lstr bytes from the RX buffer
  * \param sock UDP socket number
  * \param str2rd Buffer for data
  * \param lstr lenght of string
@@ -313,8 +321,8 @@ BOOL UDPRxOver(BYTE sock)
  */
 int UDPRead(BYTE sock, char str2rd[] , int lstr)
 {
-    #if defined (FLYPORT)
-	if (WFStatus != TURNED_OFF)
+    #if defined (FLYPORT_WF)
+	if (_WFStat != TURNED_OFF)
     #endif
 	{
 		BYTE socktmp;
@@ -351,7 +359,7 @@ int UDPRead(BYTE sock, char str2rd[] , int lstr)
 }
 
 /**
- * UDPpRead - Reads lstr bytes from the RX buffer without clear it
+ * Reads lstr bytes from the RX buffer without clear it
  * \param sock UDP socket number
  * \param str2rd Buffer for data
  * \param lstr lenght of string
@@ -360,8 +368,8 @@ int UDPRead(BYTE sock, char str2rd[] , int lstr)
  */
 int UDPpRead(BYTE sock, char str2rd[], int lstr, int start)
 {
-	#if defined (FLYPORT)
-	if (WFStatus != TURNED_OFF)
+	#if defined (FLYPORT_WF)
+	if (_WFStat != TURNED_OFF)
     #endif
 	{
 		BYTE socktmp;
@@ -401,7 +409,7 @@ int UDPpRead(BYTE sock, char str2rd[], int lstr, int start)
 }	
 
 /**
- * UDPWrite - Writes on the UDP socket
+ * Writes on the UDP socket
  * \param sockwr UDP socket number
  * \param str2wr String to write
  * \param lstr String lenght
@@ -517,13 +525,13 @@ int cUDPMultiOn()
 
     StringToIPAddress((BYTE*)xIPAddress, &m_IP);
 
-#if defined (FLYPORT)
+#if defined (FLYPORT_WF)
     UINT8 multiMAC[6];
     
     WF_SetMultiCastFilter(5, multiMAC);
 #endif
-    
-#if defined (FLYPORTETH)
+     
+#if defined (FLYPORT_ETH)
     MAC_ADDR multiMAC;
     multiMAC.v[0] = 0x01;
     multiMAC.v[1] = 0x00;
@@ -578,12 +586,12 @@ int cUDPMultiOn()
 
 BYTE UDPMultiOpen (char *udpmultiaddr, char udpmultiport[])
 {
-    #if defined (FLYPORT)
-    if (WFStatus != TURNED_OFF)
+    #if defined (FLYPORT_WF)
+    if (_WFStat != TURNED_OFF)
     #endif
     {
         static NODE_INFO MulticastNode;
-
+		DWORD argNode;
         // Enabling the multicast address
         UDPMultiOn(udpmultiaddr);
         // Creating the remote node and opening the socket
@@ -595,8 +603,8 @@ BYTE UDPMultiOpen (char *udpmultiaddr, char udpmultiport[])
         MulticastNode.MACAddr.v[3] = MulticastNode.IPAddr.v[1];
         MulticastNode.MACAddr.v[4] = MulticastNode.IPAddr.v[2];
         MulticastNode.MACAddr.v[5] = MulticastNode.IPAddr.v[3];
-
-        return UDPGenericOpen(0, &MulticastNode, udpmultiport);
+		argNode = (DWORD) (unsigned int)&MulticastNode;
+        return UDPGenericOpen(0, argNode, udpmultiport, UDP_OPEN_NODE_INFO);
     }
     return 0;
 }

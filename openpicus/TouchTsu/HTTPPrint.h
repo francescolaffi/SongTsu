@@ -22,50 +22,46 @@ void HTTPPrint(DWORD callbackID);
 void HTTPPrint_led(WORD);
 void HTTPPrint_btn(WORD);
 void HTTPPrint_pot(WORD);
-void HTTPPrint_scan(WORD);
 
 void HTTPPrint(DWORD callbackID)
 {
 	switch(callbackID)
 	{
-        case 0x00000000:
-			HTTPPrint_led(0);
-			break;
-        case 0x00000001:
-			HTTPPrint_led(1);
-			break;
-        case 0x00000002:
-			HTTPPrint_led(2);
-			break;
-        case 0x00000003:
-			HTTPPrint_led(3);
-			break;
-        case 0x00000004:
+        case 0x00000009:
 			HTTPPrint_led(4);
 			break;
-        case 0x00000005:
-			HTTPPrint_btn(0);
-			break;
-        case 0x00000006:
-			HTTPPrint_btn(1);
-			break;
-        case 0x00000007:
-			HTTPPrint_btn(2);
-			break;
-        case 0x00000008:
-			HTTPPrint_btn(3);
-			break;
-        case 0x00000009:
-			HTTPPrint_btn(4);
-			break;
         case 0x0000000a:
-			HTTPPrint_pot(0);
+			HTTPPrint_led(3);
 			break;
         case 0x0000000b:
-			HTTPPrint_pot(1);
+			HTTPPrint_led(2);
 			break;
         case 0x0000000c:
-			HTTPPrint_scan(0);
+			HTTPPrint_led(1);
+			break;
+        case 0x00000017:
+			HTTPPrint_led(0);
+			break;
+        case 0x00000018:
+			HTTPPrint_btn(0);
+			break;
+        case 0x00000019:
+			HTTPPrint_btn(1);
+			break;
+        case 0x0000001a:
+			HTTPPrint_btn(2);
+			break;
+        case 0x0000001b:
+			HTTPPrint_btn(3);
+			break;
+        case 0x0000004a:
+			HTTPPrint_btn(4);
+			break;
+        case 0x0000004b:
+			HTTPPrint_pot(0);
+			break;
+        case 0x0000004c:
+			HTTPPrint_pot(1);
 			break;
 		default:
 			// Output notification for undefined values

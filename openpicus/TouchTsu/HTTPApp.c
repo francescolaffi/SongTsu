@@ -93,20 +93,31 @@ BYTE HTTPCheckAuth(BYTE* cUser, BYTE* cPass)
 /****************************************************************************
   FUNCTION	HTTP_IO_RESULT HTTPExecuteGet(void)
 	
-  This function processes every GET request from the pages. For futher 
-  information, please see the "standard webserver" example provided.
+  This function processes every GET request from the pages. In the example, 
+  it processes only the leds.cgi function, but you can add code to process 
+  other GET requests.
 *****************************************************************************/
 HTTP_IO_RESULT HTTPExecuteGet(void)
 {
 	BYTE *ptr;
 	BYTE filename[20];
 	
+	// STEP #1:
+	// The function MPFSGetFilename retrieves the name of the requested cgi,
+	// in this case "leds.cgi" and puts it inside the filename variable.
 	// Make sure BYTE filename[] above is large enough for your longest name
 	MPFSGetFilename(curHTTP.file, filename, 20);
 
+	// STEP #2:
+	// Handling of the cgi requests, in this case we have only "leds.cgi" but
+	// it would be possible to have any other cgi request, depending on the webpage
+	
 	if(!memcmp(filename, "leds.cgi", 8))		// Is the requested file name "leds.cgi"?
 	{
-		// we are reading the 
+		// STEP #3:
+		// The complete request is contained inside the system variable curHTTP.data.
+		// Using the function HTTPGetArg is possible to read the arguments
+		// of the cgi request from curHTTP.data. In this case we are reading the 
 		// argument "led" from the request "leds.cgi?led=x" and we assign it to ptr.
 		
 		ptr = HTTPGetArg(curHTTP.data, (BYTE *)"led");
@@ -163,11 +174,10 @@ HTTP_IO_RESULT HTTPExecuteGet(void)
   Function:
 	HTTP_IO_RESULT HTTPExecutePost(void)
 
-  	This function processes every POST request from the pages. 
+  	This function processes every GET request from the pages. 
   ***************************************************************************/
 HTTP_IO_RESULT HTTPExecutePost(void)
 {
-
 	// Resolve which function to use and pass along
 	BYTE filename[20];
 	int len;

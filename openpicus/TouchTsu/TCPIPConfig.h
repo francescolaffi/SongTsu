@@ -55,7 +55,6 @@
 
 #include "GenericTypeDefs.h"
 #include "Compiler.h"
-#define GENERATED_BY_TCPIPCONFIG "Version 1.0.3775.22758"
 
 // =======================================================================
 //   Application Options
@@ -89,7 +88,7 @@
 //#define STACK_USE_DNS_SERVER			// Domain Name Service Server for redirection to the local device
 #define STACK_USE_NBNS					// NetBIOS Name Service Server for repsonding to NBNS hostname broadcast queries
 //#define STACK_USE_REBOOT_SERVER			// Module for resetting this PIC remotely.  Primarily useful for a Bootloader.
-//#define STACK_USE_SNTP_CLIENT			// Simple Network Time Protocol for obtaining current date/time from Internet
+#define STACK_USE_SNTP_CLIENT			// Simple Network Time Protocol for obtaining current date/time from Internet
 //#define STACK_USE_UDP_PERFORMANCE_TEST	// Module for testing UDP TX performance characteristics.  NOTE: Enabling this will cause a huge amount of UDP broadcast packets to flood your network on the discard port.  Use care when enabling this on production networks, especially with VPNs (could tunnel broadcast traffic across a limited bandwidth connection).
 //#define STACK_USE_TCP_PERFORMANCE_TEST	// Module for testing TCP TX performance characteristics
 //#define STACK_USE_DYNAMICDNS_CLIENT		// Dynamic DNS client updater module
@@ -108,7 +107,7 @@
  *   otherwise, uncomment the appropriate selection.
  */
 //#define STACK_USE_MPFS
-////////#define STACK_USE_MPFS2
+//#define STACK_USE_MPFS2
 
 /* MPFS Storage Location
  *   If html pages are stored in internal program memory,
@@ -120,8 +119,8 @@
  *   Supported serial flash parts include the SST25VFxxxB series.
  */
 //#define MPFS_USE_EEPROM
-#if defined (FLYPORTETH)
-	//#define MPFS_USE_SPI_FLASH
+#if defined (FLYPORT_ETH) || defined (FLYPORT_G) 
+	#define MPFS_USE_SPI_FLASH
 #endif
 /* EEPROM Addressing Selection
  *   If using the 1Mbit EEPROM, uncomment this line
@@ -154,7 +153,7 @@
  *   To clear EEPROM, hold BUTTON0, reset the board, and continue
  *   holding until the LEDs flash.  Release, and reset again.
  */
-#define MY_DEFAULT_HOST_NAME			"TOUCH_TSU"
+#define MY_DEFAULT_HOST_NAME			"PICUS"
 
 #define MY_DEFAULT_MAC_BYTE1            (0x00)	// Use the default of
 #define MY_DEFAULT_MAC_BYTE2            (0x04)	// 00-04-A3-00-00-00 if using
@@ -176,7 +175,7 @@
 #define MY_DEFAULT_GATE_BYTE1           (192ul)
 #define MY_DEFAULT_GATE_BYTE2           (168ul)
 #define MY_DEFAULT_GATE_BYTE3           (1ul)
-#define MY_DEFAULT_GATE_BYTE4           (115ul)
+#define MY_DEFAULT_GATE_BYTE4           (1ul)
 
 #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(192ul)
 #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(168ul)
@@ -292,7 +291,7 @@
 			//{TCP_PURPOSE_UART_2_TCP_BRIDGE, TCP_ETH_RAM, 256, 256},
 {TCP_PURPOSE_HTTP_SERVER, TCP_ETH_RAM, 1000, 1000},
 {TCP_PURPOSE_HTTP_SERVER, TCP_ETH_RAM, 1000, 1000},
-{TCP_PURPOSE_DEFAULT, TCP_ETH_RAM, 1000, 1000},
+			{TCP_PURPOSE_DEFAULT, TCP_ETH_RAM, 1000, 1000},
 			//{TCP_PURPOSE_BERKELEY_SERVER, TCP_ETH_RAM, 25, 20},
 			//{TCP_PURPOSE_BERKELEY_CLIENT, TCP_ETH_RAM, 125, 100}
 		};
@@ -303,7 +302,7 @@
  *   Define the maximum number of available UDP Sockets, and whether
  *   or not to include a checksum on packets being transmitted.
  */
-#define MAX_UDP_SOCKETS     (7u)
+#define MAX_UDP_SOCKETS     (8u)
 //#define UDP_USE_TX_CHECKSUM		// This slows UDP TX performance by nearly 50%, except when using the ENCX24J600, which has a super fast DMA and incurs virtually no speed pentalty.
 
 

@@ -49,7 +49,6 @@
 #ifndef __RTCCLIB_H
 #define __RTCCLIB_H
 #include "HWlib.h"
-#ifdef USE_RTCC_LIB
 #include <time.h>
 
 #define EVERY_HALF_SEC	0b0000
@@ -98,5 +97,4 @@ void RTCCAlarmConf(struct tm* rtcc, int repeats, BYTE mask, void (*fptr)());
 void RTCCAlarmSet(BYTE run);
 
 BOOL RTCCAlarmStat();
-#endif
 #endif

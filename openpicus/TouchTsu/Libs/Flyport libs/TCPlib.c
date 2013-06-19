@@ -188,7 +188,7 @@ int cTCPGenericClose()
 
 
 /**
- * TCPServerDetach - Detaches the remote client from the server
+ * Detaches the remote client from the server
  * \param sockdet - Socket of the server (the handle returned by the command TCPServerOpen).
  * \return None
  */
@@ -240,7 +240,7 @@ int cTCPServerDetach()
 
 
 /**
- * TCPClientOpen - Creates a TCP client on specified IP address and port
+ * Creates a TCP client on specified IP address and port
  * \param tcpaddr - IP address of the remote server. Example: "192.168.1.100" (the char array must be NULL terminated).
  * \param tcpport - Port of the remote server to connect. Example: "1234" (the char array must be NULL terminated).
  * \return - INVALID_SOCKET: the operation was failed. Maybe there are not available sockets.
@@ -253,7 +253,7 @@ TCP_SOCKET TCPClientOpen (char tcpaddr[] , char tcpport[])
 
 
 /**
- * TCPServerOpen - Creates a TCP server on specified port 
+ * Creates a TCP server on specified port 
  * \param tcpport - Number of the port for the server. Example: "1234" (the array must be NULL terminated).
  * \return - INVALID_SOCKET: the operation was failed. Maybe there are not available sockets.
  * \return - A TCP_SOCKET handle to the created socket. It must be used to access the socket in the program (read/write operations and close socket).
@@ -265,7 +265,7 @@ TCP_SOCKET TCPServerOpen (char tcpport[])
 
 
 /**
- * TCPRead - Reads the specified number of characters from a TCP socket and puts them into the specified char array. <B>NOTE:</B> This function flushes the buffer after reading!
+ * Reads the specified number of characters from a TCP socket and puts them into the specified char array. <B>NOTE:</B> This function flushes the buffer after reading!
  * \param socktoread - The handle of the socket to read (the handle returned by the command TCPClientOpen or TCPServerOpen).
  * \param readch - The char array to fill with the read characters.
  * \param rlen - The number of characters to read. 
@@ -309,7 +309,7 @@ void TCPRead(TCP_SOCKET socktoread , char readch[] , int rlen)
 }
 
 /**
-* TCPpRead - Reads the specified number of characters from a TCP socket and puts them into the specified char array. <B>NOTE:</B> This function does flush the buffer!
+* Reads the specified number of characters from a TCP socket and puts them into the specified char array. <B>NOTE:</B> This function does flush the buffer!
 * \param socktoread - The handle of the socket to read (the handle returned by the command TCPClientOpen or TCPServerOpen).
 * \param readch - The char array to fill with the read characters.
 * \param rlen - The number of characters to read. 
@@ -396,7 +396,7 @@ int cTCPRead()
 
 
 /**
- * TCPWrite - Writes an array of characters on the specified socket.
+ * Writes an array of characters on the specified socket.
  * \param socktowrite - The socket to which data is to be written (it's the handle returned by the command TCPClientOpen or TCPServerOpen).
  * \param writech - Pointer to the array of characters to be written.
  * \param wlen - The number of characters to write.
@@ -457,7 +457,7 @@ int cTCPWrite()
 
 
 /**
- * TCPRemote - Writes an array of characters on the specified socket.
+ * Writes an array of characters on the specified socket.
  * \param socktowrite - The socket to which data is to be written (it's the handle returned by the command TCPClientOpen or TCPServerOpen).
  * \param writech - Pointer to the array of characters to be written.
  * \param wlen - The number of characters to write.
@@ -518,7 +518,7 @@ int cTCPRemote()
 
 
 /**
- * TCPClientClose - Closes the client socket specified by the handle.
+ * Closes the client socket specified by the handle.
  * \param Sockclose - The handle of the socket to close (the handle returned by the command TCPClientOpen).
  * \return None.
  */
@@ -529,7 +529,7 @@ void TCPClientClose (TCP_SOCKET Sockclose)
 
 
 /**
- * TCPServerClose - Closes the server socket specified and destroys the handle. Any remote client connected with the server will be disconnected.
+ * Closes the server socket specified and destroys the handle. Any remote client connected with the server will be disconnected.
  * \param Sockclose - The handle of the socket to close (the handle returned by the command TCPServerOpen).
  * \return None.
  */
@@ -541,7 +541,7 @@ void TCPServerClose(TCP_SOCKET Sockclose)
 
 
 /**
- * TCPisConn - Verifies the connection of a remote TCP device with the socket. It can be useful to catch an incoming new connection to a TCP server.
+ * Verifies the connection of a remote TCP device with the socket. It can be useful to catch an incoming new connection to a TCP server.
  * \param sockconn - The handle of the socket to control (the handle returned by the command TCPServerOpen).
  * \return TRUE - The remote connection is established.
  * \return FALSE - The remote connection is not established.
@@ -595,7 +595,7 @@ int cTCPisConn()
 
 
 /**
- * TCPRxFlush - Empty specified TCP socket RX Buffer.
+ * Empty specified TCP socket RX Buffer.
  * \param sockflush - The handle of the socket to empty (the handle returned by the command TCPClientOpen or TCPServerOpen).
  * \return none.
  */
@@ -645,7 +645,7 @@ int cTCPRxFlush()
 /// @endcond
 
 /**
- * TCPRxLen - Verifies how many bytes can be read from the specified TCP socket.
+ * Verifies how many bytes can be read from the specified TCP socket.
  * \param socklen - The handle of the socket to control (the handle returned by the command TCPClientOpen or TCPServerOpen).
  * \return The number of bytes available to be read.
  */

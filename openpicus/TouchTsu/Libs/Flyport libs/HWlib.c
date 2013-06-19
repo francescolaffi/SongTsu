@@ -58,8 +58,19 @@
 /// @cond debug
 #include "HWlib.h"
 #include "p24FJ256GA106.h"
+#if defined (FLYPORTGPRS)
+#include "Tick.h"
+#else
 #include "TCPIP Stack/tick.h"
+#endif
 
+void StackDebug(char* dbgstr)	
+{
+	#if defined(STACK_USE_UART) 
+		UARTWrite(1, dbgstr);
+	#else 
+	#endif
+}
 
 /*****************************************************************************
 *									SECTION:								 *
@@ -106,15 +117,11 @@ extern int *URXREGs[];
 
 extern int UTXIPos[];
 extern int URXIPos[];
-				
-extern int *AD1CFGL;
-extern int *AD1CFGH;
-extern int *AD1CONF1;
-extern int *AD1CONF2;
-extern int *AD1CONF3;
-extern int *AD1CH;
-extern int *AD1CSL;
-
+#if defined (FLYPORTGPRS)
+#define MAX_UART_PORTS 3
+#else
+#define MAX_UART_PORTS 4
+#endif				
 static int bufind_w[4];
 static int bufind_r[4];
 static int Status[26];
@@ -145,30 +152,29 @@ The precision of the ADC is 10 bit.
  * \return None
  */
 void ADCInit()
-{
-	*AD1CFGL = ADCCHANNELSL;		//	ADC channels enabled
-	*AD1CFGH = 0x3;					//	Internal band gap disabled for scan
-	
+{	
 	//	AD1CON1 settings:
 	//	ADC OFF, continue operation in idle mode, output like integer, autoconv.
-	*AD1CONF1 = 0x00E0;	
-	//AD1CON1bits.ASAM = 0;
-
-	//	AD1CHS settings:
-	//	MUX A inputs Vref+ and Vref-.
-	*AD1CH = 0x0; 
-	*AD1CSL = 0x0;	
+	AD1CON1 = 0x00E0;	
 	
 	//	AD1CON2 settings:
 	//	External Vref, input scan, 2 sequences per interrupt, buffer is 16bit wide
 	//	only MUX A used.
-	*AD1CONF2 = 0x6000;
+	AD1CON2 = 0x6000;
 	
 	//	AD1CON3 settings:
 	//	Clock derived from system clock, auto sample: 1Tad, conv. clock = 5 * Tcy
-	*AD1CONF3 = 0x0F10;	
+	AD1CON3 = 0x0F10;
 	
-	IPC3bits.AD1IP = 7;
+	AD1PCFGL = ADCCHANNELSL;		//	ADC channels enabled
+	AD1PCFGH = 0x3;					//	Internal band gap disabled for scan
+
+	//	AD1CHS settings:
+	//	MUX A inputs Vref+ and Vref-.
+	AD1CHS = 0x0; 
+	AD1CSSL = 0x0;	
+	
+	//IPC3bits.AD1IP = 6;
 	IFS0bits.AD1IF  = 0;
 	IEC0bits.AD1IE  = 1;
 	AD1CON1bits.ADON = 1;
@@ -179,8 +185,7 @@ static BOOL AD_flag = FALSE;
 
 void __attribute__ ((__interrupt__, no_auto_psv)) _ADC1Interrupt(void)
 {
-	IFS0bits.AD1IF  = 0;
-	AD1CON1bits.ASAM = 0;
+	IFS0bits.AD1IF = 0;	
 	AD_val = ADC1BUF0;
 	AD_flag = TRUE;
 }
@@ -191,13 +196,13 @@ void __attribute__ ((__interrupt__, no_auto_psv)) _ADC1Interrupt(void)
  */
 int ADCVal(int ch)
 {
-	*AD1CH = an[ch];
+	AD1CHS = an[ch];
 	// Added to stability correction 
 	// on using ADCVal with webserver active
 
  	IFS0bits.AD1IF = 0;	
 	AD_flag = FALSE;
-	AD1CON1bits.ASAM = 1;
+	AD1CON1bits.SAMP = 1;
 	while (!AD_flag);
 	return AD_val;
 }
@@ -277,8 +282,8 @@ void IOPut(int io, int putval)
 	<LI><B>UART2CTS</B> UART2 CTS input pin.</LI>
 	<LI><B>UART3RX</B> UART3 RX input pin.</LI>
 	<LI><B>UART3CTS</B> UART3 CTS input pin.</LI>
-	<LI><B>UART4RX</B> UART4 RX input pin.</LI>
-	<LI><B>UART4CTS</B> UART4 CTS input pin.</LI>
+	<LI><B>UART4RX</B> UART4 RX input pin. <B><I>Note:</B>not available for Flyport GPRS</I></LI>
+	<LI><B>UART4CTS</B> UART4 CTS input pin. <B><I>Note:</B>not available for Flyport GPRS</I></LI>
 	<LI><B>EXT_INT2</B> External Interrupt 2 input pin.</LI>
 	<LI><B>EXT_INT3</B> External Interrupt 3 input pin.</LI>
 	<LI><B>EXT_INT4</B> External Interrupt 4 input pin.</LI>
@@ -292,8 +297,8 @@ void IOPut(int io, int putval)
 	<LI><B>UART2RTS</B> UART2 RTS output pin.</LI>
 	<LI><B>UART3TX</B> UART3 TX output pin.</LI>
 	<LI><B>UART3RTS</B> UART3 RTS output pin.</LI>
-	<LI><B>UART4TX</B> UART4 TX output pin.</LI>
-	<LI><B>UART4RTS</B> UART4 RTS output pin.</LI>
+	<LI><B>UART4TX</B> UART4 TX output pin. <B><I>Note:</B>not available for Flyport GPRS</I></LI>
+	<LI><B>UART4RTS</B> UART4 RTS output pin. <B><I>Note:</B>not available for Flyport GPRS</I></LI>
 	<LI><B>SPICLKOUT</B> SPI clock output pin (only in master mode).</LI>
 	<LI><B>SPI_OUT</B> SPI data output pin.</LI>
 	<LI><B>SPI_SS_OUT</B> SPI slave select output pin (only in master mode).</LI>
@@ -462,9 +467,10 @@ int IOGet(int io)
   </UL>
  */
 static DWORD tdebounce1 = 0;
+
 int IOButtonState(int io)
 {
-	DWORD tdebounce2;
+    DWORD tdebounce2;
 	tdebounce2 = TickGetDiv256();
 	if ((tdebounce2-tdebounce1)>5)
 	{
@@ -517,66 +523,87 @@ The UART section provides serial communication. The flyport implements a buffer 
 
  /**
  * Initializes the specified uart port with the specified baud rate.
- * \param port The UART port to initialize. 
- * \param baud The desired baudrate.
+ * \param port - the UART port to initialize. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
+ * \param baud - the desired baudrate.
  * \return None
  */
 void UARTInit(int port,long int baud)
 {
-	port--;
-	long int brg , baudcalc , clk , err;
-	clk = GetInstructionClock();
-	brg = (clk/(baud*16ul))-1;
-	baudcalc = (clk/16ul/(brg+1));
-	err = (abs(baudcalc-baud)*100ul)/baud;
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
+	{
+	#endif
+		port--;
+		long int brg , baudcalc , clk , err;
+		clk = GetInstructionClock();
+		brg = (clk/(baud*16ul))-1;
+		baudcalc = (clk/16ul/(brg+1));
+		err = (abs(baudcalc-baud)*100ul)/baud;
 
-	if (err<2)
-	{
-		*UMODEs[port] = 0;
-		*UBRGs[port] = brg;
+		if (err<2)
+		{
+			*UMODEs[port] = 0;
+			*UBRGs[port] = brg;
+		}
+		else
+		{
+			brg = (clk/(baud*4ul))-1;
+			*UMODEs[port] = 0x8;
+			*UBRGs[port] = brg;
+		}
+	#if defined (FLYPORTGPRS)
 	}
-	else
-	{
-		brg = (clk/(baud*4ul))-1;
-		*UMODEs[port] = 0x8;
-		*UBRGs[port] = brg;
-	}
+	#endif
 }
 
 
  /**
  * After the initialization, the UART must be turned on with this command.
- * \param port The UART port to turn on. 
+ * \param port - the UART port to turn on. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
  * \return None
  */
 void UARTOn(int port)
 {
-	port--;
-	*UMODEs[port] = *UMODEs[port] | 0x8000;
-	*USTAs[port] = *USTAs[port] | 0x400;
-	
-	*UIFSs[port] = *UIFSs[port] & (~URXIPos[port]);
-	*UIFSs[port] = *UIFSs[port] & (~UTXIPos[port]);
-	*UIECs[port] = *UIECs[port] | URXIPos[port];
-	bufind_w[port] = 0;
-	bufind_r[port] = 0;
-	last_op[port] = 0;
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
+	{
+	#endif
+		port--;
+		*UMODEs[port] = *UMODEs[port] | 0x8000;
+		*USTAs[port] = *USTAs[port] | 0x400;
+
+		*UIFSs[port] = *UIFSs[port] & (~URXIPos[port]);
+		*UIFSs[port] = *UIFSs[port] & (~UTXIPos[port]);
+		*UIECs[port] = *UIECs[port] | URXIPos[port];
+		bufind_w[port] = 0;
+		bufind_r[port] = 0;
+		last_op[port] = 0;
+	#if defined (FLYPORTGPRS)
+	}
+	#endif
 }
 
 
  /**
  * Turns off the specified UART port.
- * \param port The UART port to turn off. 
+ * \param port - the UART port to turn off. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
  * \return None
  */
 void UARTOff(int port)
 {
-	port--;
-	*USTAs[port] = *USTAs[port] & 0xFBFF;
-	*UMODEs[port] = *UMODEs[port] & 0x7FFF;
-	
-	*UIECs[port] = *UIECs[port] & (~URXIPos[port]);
-	*UIECs[port] = *UIECs[port] & (~UTXIPos[port]);
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
+	{
+	#endif
+		port--;
+		*USTAs[port] = *USTAs[port] & 0xFBFF;
+		*UMODEs[port] = *UMODEs[port] & 0x7FFF;
+		
+		*UIECs[port] = *UIECs[port] & (~URXIPos[port]);
+		*UIECs[port] = *UIECs[port] & (~UTXIPos[port]);
+	#if defined (FLYPORTGPRS)
+	}
+	#endif
 }
 
 /// @cond debug
@@ -617,151 +644,184 @@ void UARTRxInt(int port)
 /// @endcond
 
 
+
  /**
  * Flushes the buffer of the specified UART port.
- * \param port The UART port to flush. 
+ * \param port - the UART port to flush. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
  * \return None
  */
 void UARTFlush(int port)
 {
-	port = port-1;
-	bufind_w[port] = 0;
-	bufind_r[port] = 0;
-	last_op[port] = 0;
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
+	{
+	#endif
+		port = port-1;
+		bufind_w[port] = 0;
+		bufind_r[port] = 0;
+		last_op[port] = 0;
+	#if defined (FLYPORTGPRS)
+	}
+	#endif
 }
 
 
  /**
  * Returns the RX buffer size of the specified UART port.
- * \param port The UART port to read. 
- * \return The number of characters that can be read from the specified serial port.
+ * \param port - the UART port to read. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
+ * \return the number of characters that can be read from the specified serial port.
  */
 int UARTBufferSize(int port)
 {
-	port = port-1;
-	BYTE loc_last_op = last_op[port];
-	int conf_buff;
-	int bsize=0;
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
+	{
+	#endif
+		port = port-1;
+		BYTE loc_last_op = last_op[port];
+		int conf_buff;
+		int bsize=0;
 
-	conf_buff = bufind_r[port] - bufind_w[port];
-	if (conf_buff > 0)
-		bsize = UART_BUFFER_SIZE - bufind_r[port] + bufind_w[port];
-	else if (conf_buff < 0)
+		conf_buff = bufind_r[port] - bufind_w[port];
+		if (conf_buff > 0)
+			bsize = UART_BUFFER_SIZE - bufind_r[port] + bufind_w[port];
+		else if (conf_buff < 0)
 
-		bsize = bufind_w[port] - bufind_r[port];
-	else if (conf_buff == 0)
-		if (loc_last_op == 1)
-			bsize = UART_BUFFER_SIZE;
+			bsize = bufind_w[port] - bufind_r[port];
+		else if (conf_buff == 0)
+			if (loc_last_op == 1)
+				bsize = UART_BUFFER_SIZE;
 
-	return bsize;
+		return bsize;
+	#if defined (FLYPORTGPRS)
+	}
+	else
+		return -1;
+	#endif
 }
 
 
  /**
  * Reads characters from the UART RX buffer and put them in the char pointer "towrite" . Also returns the report for the operation.
- * \param port The UART port to read. 
- * \param towrite The char pointer to fill with the read characters.
- * \param count The number of characters to read
- * \return The report for the operation:
+ * \param port - the UART port to read. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
+ * \param towrite - the char pointer to fill with the read characters.
+ * \param count - the number of characters to read
+ * \return the report for the operation:
   <UL>
-	<LI><B>n0:</B> N characters correctly read.</LI> 
+	<LI><B>n>0:</B> N characters correctly read.</LI> 
 	<LI><B>n<0:</B> N characters read, but buffer overflow detected.</LI> 
  </UL>
  */
-int UARTRead (int port , char *towrite , int count)
+int UARTRead(int port , char *towrite , int count)
 {
-	int rd,limit;
-	limit = UARTBufferSize(port);
-	if (count > limit)
-		count=limit;
-	port = port-1;
-	int irx = 0;
-	rd = 0;
-	while (irx < count)
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
 	{
+	#endif
+		int rd,limit;
+		limit = UARTBufferSize(port);
+		if (count > limit)
+			count=limit;
+		port = port-1;
+		int irx = 0;
+		rd = 0;
+		while (irx < count)
+		{
+			*(towrite+irx) = Buffer[port][bufind_r[port]];
 
+			if (bufind_r[port] == (UART_BUFFER_SIZE-1))
+				bufind_r[port] = 0;
+			else
+				bufind_r[port]++;		
 
-		*(towrite+irx) = Buffer[port][bufind_r[port]];
-
-
-		if (bufind_r[port] == (UART_BUFFER_SIZE-1))
-			bufind_r[port] = 0;
+			irx++;
+		}
+		
+		if ( buffover [port] != 0 )
+		{
+			rd = -count;
+			buffover[port] = 0;
+		}
 		else
-			bufind_r[port]++;		
+			rd = count;
 
-		irx++;
-	}
-	
-	if ( buffover [port] != 0 )
-	{
-		rd = -count;
-		buffover[port] = 0;
+		last_op[port] = 2;
+		return rd;
+	#if defined (FLYPORTGPRS)
 	}
 	else
-		rd = count;
-
-
-
-	last_op[port] = 2;
-	return rd;
+		return -1;
+	 #endif
 }
 
 
 
  /**
  * Writes the specified string on the UART port.
- * \param port The UART port to write to.
- * \param buffer The string to write (a NULL terminated char array).
+ * \param port - the UART port to write to. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
+ * \param buffer - the string to write (a NULL terminated char array).
  * \return None
  */
 void UARTWrite(int port, char *buffer)
 {
-	port--;
-	int pdsel;
-    // transmits till NUL character is encountered 
-	pdsel = (*UMODEs[port] & 6) >>1;
-    if (pdsel == 3)                             // checks if TX is 8bits or 9bits
-    {
-        while(*buffer != '\0') 
-        {
-            while((*USTAs[port] & 512)>0);	// waits if the buffer is full 
-            *UTXREGs[port] = *buffer++;         // sends char to TX reg
-        }
-    }
-    else
-    {
-        while(*buffer != '\0')
-        {
-            while((*USTAs[port] & 512)>0);      // sends char to TX reg
-            *UTXREGs[port] = *buffer++ & 0xFF;  // sends char to TX reg
-        }
-    }
-
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
+	{
+	#endif
+		port--;
+		int pdsel;
+		// transmits till NUL character is encountered 
+		pdsel = (*UMODEs[port] & 6) >>1;
+		if (pdsel == 3)                             // checks if TX is 8bits or 9bits
+		{
+			while(*buffer != '\0') 
+			{
+				while((*USTAs[port] & 512)>0);	// waits if the buffer is full 
+				*UTXREGs[port] = *buffer++;         // sends char to TX reg
+			}
+		}
+		else
+		{
+			while(*buffer != '\0')
+			{
+				while((*USTAs[port] & 512)>0);      // sends char to TX reg
+				*UTXREGs[port] = *buffer++ & 0xFF;  // sends char to TX reg
+			}
+		}
+	#if defined (FLYPORTGPRS)
+	}
+	#endif
 }
 
 
  /**
  * Writes a single character on the UART port.
- * \param port The UART port to write to.
- * \param char The char to write.
+ * \param port - the UART port to write to. <B><I>Note:</B> port 4 not available for Flyport GPRS</I>
+ * \param char - the char to write.
  * \return None
  */
 void UARTWriteCh(int port, char chr)
 {
-	port--;
-	int pdsel;
-	pdsel = (*UMODEs[port] & 6) >>1;
-    if(pdsel == 3)        /* checks if TX is 8bits or 9bits */
-    {
-        while((*USTAs[port] & 512)>0);	/* waits if the buffer is full */
-        *UTXREGs[port] = chr;    		/* transfer data to TX reg */
-    }
-    else
-    {
-        while((*USTAs[port] & 512)>0); /* waits if the buffer is full */
-        *UTXREGs[port] = chr & 0xFF;   /* transfer data to TX reg */
-    }
-
+	#if defined (FLYPORTGPRS)
+	if(port < 4)
+	{
+	#endif
+		port--;
+		int pdsel;
+		pdsel = (*UMODEs[port] & 6) >>1;
+		if(pdsel == 3)        /* checks if TX is 8bits or 9bits */
+		{
+			while((*USTAs[port] & 512)>0);	/* waits if the buffer is full */
+			*UTXREGs[port] = chr;    		/* transfer data to TX reg */
+		}
+		else
+		{
+			while((*USTAs[port] & 512)>0); /* waits if the buffer is full */
+			*UTXREGs[port] = chr & 0xFF;   /* transfer data to TX reg */
+		}
+	#if defined (FLYPORTGPRS)
+	}
+	#endif
 }
 
 /*! @} */
@@ -927,6 +987,7 @@ void I2CInit(BYTE I2CSpeed)
 	I2C1TRN = 0x0000;
 	I2C1RCV = 0x0000;
 		
+
 	I2C1BRG = I2CSpeed;			// Set I2C module at 100 KHz
 	I2C1CON = 0x8200;			// Configuration of module
 }
@@ -983,6 +1044,7 @@ BOOL I2CStop()
 	I2C1CONbits.PEN=1;				// Initiate a Stop condition on the bus
 	while(I2C1CONbits.PEN)			// waits the end of stop
 		{
+
 		i2cCount++;
 		Delay10us(1);
 		if (i2cCount == 50000)
@@ -1062,18 +1124,21 @@ BOOL I2CReadMulti(BYTE devAddr, BYTE regAddr, BYTE dest[], unsigned int regToRea
 	unsigned char rep;
 	BOOL report;
 	
+
 	devAddr = devAddr << 1;
  	I2CStart();						//Start sequence
 	I2CWrite(devAddr & 0xFE);		//Initiate write sequence
 	I2CWrite(regAddr);				//Send register to start reading
 	report = I2CRestart();			//Restart
 	
+
 	//	Writing sequence terminated, check on restart error
 	if (!report)
 		return FALSE;
 	I2CWrite(devAddr | 0x01); 		//Initiate read sequence to read the registers
 	Delay10us(rwDelay);		
 	
+
 	//	Reading regToRead bytes from the device
 	for (rep=0; rep<(regToRead-1); rep++)
 	{
@@ -1115,6 +1180,7 @@ void I2CWriteMulti(BYTE devAddr, BYTE regAddr, BYTE* src, unsigned int regToWrit
 {
 	unsigned char rep;
 	
+
 	devAddr = devAddr << 1;
  	I2CStart(); 					//Start sequence
 	I2CWrite(devAddr & 0xFE);		//Initiate write sequence

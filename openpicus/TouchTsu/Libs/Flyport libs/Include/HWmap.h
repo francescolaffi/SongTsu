@@ -57,13 +57,44 @@
 #define GetInstructionClock()	(GetSystemClock()/2)
 #define GetPeripheralClock()	GetInstructionClock()	
 
-#define FLYPORT
-	
+// Three Flyport model supported: FLYPORT_B, FLYPORT_G and FLYPORT_ETH
+#define FLYPORT_G
+
+//	Old defines compatibility
+#if defined (FLYPORT_ETH)
+	#define FLYPORTETH
+#endif
+
+#if defined (FLYPORT_B)
+	#define FLYPORT
+#endif
+
 /*****************************************************************************
  *							--- WIFI MODULE MAPPING ---					 	 *
  ****************************************************************************/
-#if defined (FLYPORT)
-	#define MRF24WB0M_IN_SPI1
+#if defined (FLYPORT_G)
+	#define MRF24WG
+	#define FLYPORT_WF
+	
+	//	External SPI flash connections
+	#define SPIFLASH_CS_TRIS		(TRISDbits.TRISD6)
+	#define SPIFLASH_CS_IO			(LATDbits.LATD6)
+	#define SPIFLASH_SCK_TRIS		(TRISDbits.TRISD5)
+	#define SPIFLASH_SDI_TRIS		(TRISBbits.TRISB4)
+	#define SPIFLASH_SDI_IO			(PORTBbits.RB4)
+	#define SPIFLASH_SDO_TRIS		(TRISBbits.TRISB5)
+	#define SPIFLASH_SPI_IF			(IFS2bits.SPI2IF)
+	#define SPIFLASH_SSPBUF			(SPI2BUF)
+	#define SPIFLASH_SPICON1		(SPI2CON1)
+	#define SPIFLASH_SPICON1bits	(SPI2CON1bits)
+	#define SPIFLASH_SPICON2		(SPI2CON2)
+	#define SPIFLASH_SPISTAT		(SPI2STAT)
+	#define SPIFLASH_SPISTATbits	(SPI2STATbits)
+#elif defined (FLYPORT_B)
+	#define FLYPORT_WF
+#endif
+
+#if defined (FLYPORT_WF)
 	
 	#define WF_CS_TRIS			(TRISGbits.TRISG9)
 	#define WF_CS_IO			(LATGbits.LATG9)
@@ -90,25 +121,25 @@
 	//#define WF_SPI_IP			(IPC2bits.SPI1IP)
 	#define WF_SPI_IF			(IFS0bits.SPI1IF)
 
-#elif defined (FLYPORTETH)
+#elif defined (FLYPORT_ETH)
 
-        #define ENC100_INTERFACE_MODE			5
-        #define ENC100_PSP_USE_INDIRECT_RAM_ADDRESSING
-        #define ENC100_TRANSLATE_TO_PIN_ADDR(a)		((((a)&0x0100)<<6) | ((a)&0x00FF))
-
-        #define SPIFLASH_CS_TRIS	(TRISBbits.TRISB4)
-        #define SPIFLASH_CS_IO		(LATBbits.LATB4)
-        #define SPIFLASH_SCK_TRIS	(TRISGbits.TRISG9)
-        #define SPIFLASH_SDI_TRIS	(TRISGbits.TRISG7)
-        #define SPIFLASH_SDI_IO		(PORTGbits.RG7)
-        #define SPIFLASH_SDO_TRIS	(TRISGbits.TRISG8)
-        #define SPIFLASH_SPI_IF		(IFS1bits.SPI1IF)
-        #define SPIFLASH_SSPBUF		(SPI1BUF)
-        #define SPIFLASH_SPICON1	(SPI1CON1)
-        #define SPIFLASH_SPICON1bits	(SPI1CON1bits)
-        #define SPIFLASH_SPICON2	(SPI1CON2)
-        #define SPIFLASH_SPISTAT	(SPI1STAT)
-        #define SPIFLASH_SPISTATbits	(SPI1STATbits)
+	#define ENC100_INTERFACE_MODE			5
+	#define ENC100_PSP_USE_INDIRECT_RAM_ADDRESSING
+	#define ENC100_TRANSLATE_TO_PIN_ADDR(a)		((((a)&0x0100)<<6) | ((a)&0x00FF))
+	
+	#define SPIFLASH_CS_TRIS	(TRISBbits.TRISB4)
+	#define SPIFLASH_CS_IO		(LATBbits.LATB4)
+	#define SPIFLASH_SCK_TRIS	(TRISGbits.TRISG9)
+	#define SPIFLASH_SDI_TRIS	(TRISGbits.TRISG7)
+	#define SPIFLASH_SDI_IO		(PORTGbits.RG7)
+	#define SPIFLASH_SDO_TRIS	(TRISGbits.TRISG8)
+	#define SPIFLASH_SPI_IF		(IFS1bits.SPI1IF)
+	#define SPIFLASH_SSPBUF		(SPI1BUF)
+	#define SPIFLASH_SPICON1	(SPI1CON1)
+	#define SPIFLASH_SPICON1bits	(SPI1CON1bits)
+	#define SPIFLASH_SPICON2	(SPI1CON2)
+	#define SPIFLASH_SPISTAT	(SPI1STAT)
+	#define SPIFLASH_SPISTATbits	(SPI1STATbits)
 
 #endif
 
@@ -227,9 +258,9 @@
 	#define d5out				(21)
 	
 	//	ADC
-#if defined (FLYPORT)
+#if defined (FLYPORT_WF)
 	#define ADCCHANNELSL		(0x3F3F)
-#elif defined (FLYPORTETH)
+#elif defined (FLYPORT_ETH)
 	#define ADCCHANNELSL		(0xBF1F)
 #endif
 	

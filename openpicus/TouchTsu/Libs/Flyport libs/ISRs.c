@@ -37,39 +37,28 @@ void __attribute__((interrupt, no_auto_psv)) _U4RXInterrupt(void)
 
 void __attribute__((interrupt, auto_psv)) _DefaultInterrupt(void)
 {
-	#ifdef STACK_USE_UART
-	UARTWrite(1,"!!! Default interrupt handler !!!\r\n" );
-	#endif
+	StackDebug("!!! Default interrupt handler !!!\r\n" );
 	Reset();
 }
 
 void __attribute__((interrupt, auto_psv)) _OscillatorFail(void)
 {
-	#ifdef STACK_USE_UART
-	UARTWrite(1, "!!! Oscillator Fail interrupt handler !!!\r\n" );
-	#endif
+	StackDebug("!!! Oscillator Fail interrupt handler !!!\r\n" );
 	Reset();
 }
 void __attribute__((interrupt, auto_psv)) _AddressError(void)
 {
-
-	#ifdef STACK_USE_UART
-	UARTWrite(1,"!!! Address Error interrupt handler !!!\r\n" );
-	#endif
+	StackDebug("!!! Address Error interrupt handler !!!\r\n" );
 	Reset();
 }
 void __attribute__((interrupt, auto_psv)) _StackError(void)
 {
-	#ifdef STACK_USE_UART
-	UARTWrite(1,"!!! Stack Error interrupt handler !!!\r\n" );
-	#endif
+	StackDebug("!!! Stack Error interrupt handler !!!\r\n" );
 	Reset();
 }
 void __attribute__((interrupt, auto_psv)) _MathError(void)
 {
-	#ifdef STACK_USE_UART
-	UARTWrite(1,"!!! Math Error interrupt handler !!!\r\n" );
-	#endif
+	StackDebug("!!! Math Error interrupt handler !!!\r\n" );
 	Reset();
 }
 

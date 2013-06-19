@@ -1,3 +1,5 @@
+#ifndef __TASKFLY_H
+#define __TASKFLY_H
 #include "INTlib.h"
 
 #include "string.h"
@@ -7,11 +9,17 @@
 #include "SMTPlib.h"
 #include "RTCClib.h"
 
+#if defined (FLYPORT_ETH) || defined (FLYPORT_G) 
+#include "SPIFlash.h"
+#endif
+
+#ifndef __MAIN_C
+#define WFStatus WFGetStat()
 //	RTOS components - Semaphore and queues
 extern xQueueHandle xQueue;
 extern xSemaphoreHandle xSemFrontEnd;
 extern xSemaphoreHandle xSemHW;
-
+extern APP_CONFIG AppConfig;
 
 //	FrontEnd variables
 extern BYTE xIPAddress[];
@@ -29,10 +37,11 @@ extern NODE_INFO xNode;
 
 extern SMTP_POINTERS SMTPClient;
 extern BOOL DHCPAssigned;
-extern APP_CONFIG AppConfig;
-#if defined (FLYPORTETH)
+#if defined (FLYPORT_ETH)
 extern BOOL MACLinked;
-#endif
+#endif	
+
+#endif	// #ifndef __MAIN_C
 
 void FlyportTask();
-
+#endif	// #ifndef __TASKFLY_

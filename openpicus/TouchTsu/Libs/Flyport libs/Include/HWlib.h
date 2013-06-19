@@ -61,10 +61,11 @@
 #include "queue.h"
 #include "semphr.h"
 
-#define USE_RTCC_LIB
+//#define USE_RTCC_LIB
 //	UART general defines
 #define UART_BUFFER_SIZE 	256
 #define UART_PORTS			1
+#define UART_DBG_DEF_BAUD	19200
 
 
 
@@ -77,6 +78,8 @@
 #define STOPPING			5
 #define TURNED_OFF			6
 #define SCANNING			7
+#define GETTING_RSSI		8
+#define RECONNECTING		9
 
 #define WF_CUSTOM		0
 #define WF_DEFAULT		1
@@ -192,7 +195,6 @@ int IOButtonState(int io);
 #define uartwrite		UARTWrite
 #define uartread		UARTRead	
 #define uartbuffer		UARTBuffer
-
 	
 void UARTInit(int port,long int baud);
 void UARTOn(int port);
@@ -205,6 +207,7 @@ int UARTRead (int , char* , int);
 void UARTWriteCh(int , char);
 //static
 BOOL DownloadMPFS(void);
+void StackDebug(char* dbgstr);
 
 /*************************************************************************************
 	Section:

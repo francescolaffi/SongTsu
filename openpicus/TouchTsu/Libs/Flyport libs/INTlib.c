@@ -70,7 +70,7 @@ void nothigToDo()
 /// @endcond
 
 /**
- * INTDetach - Detaches the function assigned to the External Interrupt.
+ * Detaches the function assigned to the External Interrupt.
  * \param intNum - the number of external interrupt peripheral (2, 3 or 4).
  * \return None
  */
@@ -97,7 +97,7 @@ void INTDetach(int intNum)
 }
 
 /**
- * INTAttach - Attaches a generic user function to the External Interrupt.
+ * Attaches a generic user function to the External Interrupt.
  * \param intNum - the number of external interrupt peripheral (2, 3 or 4).
  * \param functionName - the name of the user function to execute.
  * \return None
@@ -128,7 +128,7 @@ void INTAttach(int intNum, void functionName())
 }
 
 /**
- * INTInit - Initialize the External Interrupt.
+ * Initialize the External Interrupt.
  * \param intNum - the number of external interrupt peripheral (2, 3 or 4).
  * \param functionName - the name of the user function to execute.
  * \param mode - the edge mode for interrupt execution (0 on positive edge, 1 on negative edge).
@@ -164,7 +164,7 @@ void INTInit(int intNum, void functionName(), BOOL mode)
 }
 
 /**
- * INTPriority - Changes the External Interrupt Priority.
+ * Changes the External Interrupt Priority.
  * \param intNum - the number of external interrupt peripheral (2, 3 or 4).
  * \param priority - the new priority to use (0->very low, up to 7->very high).
  * \return None
@@ -192,7 +192,7 @@ void INTPriority(int intNum, BYTE priority)
 }
 
 /**
- * INTEnable - Enables the External Interrupt.
+ * Enables the External Interrupt.
  * \param intNum - the number of external interrupt peripheral (2, 3 or 4).
  * \return None
  */
@@ -226,7 +226,7 @@ void INTEnable(int intNum)
 }
 
 /**
- * INTDisable - Disables the External Interrupt.
+ * Disables the External Interrupt.
  * \param intNum - the number of external interrupt peripheral (2, 3 or 4).
  * \return None
  */

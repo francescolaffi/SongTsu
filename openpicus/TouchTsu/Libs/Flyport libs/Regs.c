@@ -49,7 +49,7 @@
 #include "GenericTypeDefs.h"
 #include "HWmap.h"
 
-#if defined (FLYPORT)
+#if defined (FLYPORT_WF)
 
 int *LATs[] 	= 	{	(int*) 0x2F4 , (int*) 0x2EC , (int*) 0x2F4 , 
 						(int*) 0x2EC , (int*) 0x2EC , (int*) 0x2EC , 
@@ -189,7 +189,7 @@ BOOL RPIRPos[]	=	{	0, 1, 0,
 						0, 0, 0
 					};
 
-#elif defined (FLYPORTETH)
+#elif defined (FLYPORT_ETH)
 
 int *LATs[]  = { (int*) 0x2F4 , (int*) 0x2EC , (int*) 0x2F4 ,
                  (int*) 0x2EC , (int*) 0x2EC , (int*) 0x2EC ,

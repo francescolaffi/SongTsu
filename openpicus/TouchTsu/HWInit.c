@@ -55,6 +55,7 @@
 #include "p24FJ256GA106.h"
 
 extern BOOL TimerOn[5];
+extern int __C30_UART;
 /****************************************************************************
   Function 		static void HWInit(int conf)
 
@@ -72,6 +73,7 @@ void HWInit(int conf)
 {	
 	TimerOn[0] = TRUE;
 	TimerOn[4] = TRUE;
+	__C30_UART = 1;
 	if (conf == HWDEFAULT)
 	{
 // IOs configuration
@@ -94,11 +96,9 @@ void HWInit(int conf)
 	// Unlock registers to PPS configuration
 	__builtin_write_OSCCONL(OSCCON & 0xBF);
 
-    #if defined (FLYPORT)
-	#if defined(WF_CS_TRIS)
+    #if defined (FLYPORT_WF)
 		WF_CS_IO = 1;
 		WF_CS_TRIS = 0;
-	#endif
 
 		// PPS configuration
 		//Configure SPI1 PPS pins for WiFi
@@ -108,8 +108,15 @@ void HWInit(int conf)
 	
 		// Configure INT1 PPS pin 
 		RPINR0bits.INT1R = 13;					// Assign RP13 to INT1 (input)
+		
+		#if defined (FLYPORT_G)
+			// Configure SPI2 PPS pins for flash		
+			RPOR10bits.RP20R = 11;                                  // Assign RP20 to SCK2 (output)
+	        RPOR9bits.RP18R = 10;                                   // Assign RP18 to SDO2 (output)
+	        RPINR22bits.SDI2R = 28;                                 // Assign RP28 to SDI2 (input)                
+		#endif
 
-    #elif defined (FLYPORTETH)
+    #elif defined (FLYPORT_ETH)
 		// Configure SPI1 PPS pins for flash
 		RPOR13bits.RP27R = 8;					// Assign RP27 21 to SCK1 (output)
 		RPOR9bits.RP19R = 7;					// Assign RP19 26 to SDO1 (output)

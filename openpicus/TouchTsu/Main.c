@@ -23,7 +23,7 @@ Special thanks to Andrea Seraghiti for the support in development.
 /****************************************************************************
   SECTION 	Includes
 ****************************************************************************/
-
+#define __MAIN_C
 #include "taskTCPIP.h"
 #include "taskFlyport.h"
 
@@ -45,15 +45,14 @@ _CONFIG1(JTAGEN_OFF & FWDTEN_OFF & ICS_PGx2 )		// JTAG off, watchdog timer off
 #include "TCPIP Stack/ZeroconfMulticastDNS.h"
 #endif
 
+//#define FW_VER_ON_U1
 
 APP_CONFIG AppConfig;
 APP_CONFIG NETConf[2];
 
-UINT8 ConnectionProfileID = 0;	
+UINT8 ConnectionProfileID = 0;
 
-int __C30_UART = 2;
-
-int WFStatus = NOT_CONNECTED;
+int _WFStat = NOT_CONNECTED;
 int WFStatusold;
 int WFConnection = WF_DEFAULT;
 
@@ -77,9 +76,10 @@ int xInt;
 int xInt2;
 NODE_INFO xNode;
 
+BOOL WPAWrong = FALSE;
 extern SMTP_POINTERS SMTPClient;
-
-#if defined (FLYPORT)
+#if defined (FLYPORT_WF)
+extern RSSI_VAL myRSSI;
 	tWFNetwork xNet;
 #endif
 
@@ -111,7 +111,7 @@ UDP_PORT xUDPPort[MAX_UDP_SOCKETS_FREERTOS];
 BYTE* p_udp_wifiram[MAX_UDP_SOCKETS_FREERTOS];		//internal use
 BYTE* p_udp_data[MAX_UDP_SOCKETS_FREERTOS];			//user data
 WORD tmp_len[MAX_UDP_SOCKETS_FREERTOS];
-NODE_INFO* udpIPAddress;
+DWORD xUDPRemoteHost;
 WORD xUDPLocalPort = 0;
 WORD xUDPRemotePort = 0;
 BYTE activeUdpSocket = 0;
@@ -196,11 +196,7 @@ void CmdCheck()
 					}
 				}
 				udpRxLenGlobal[activeUdpSocket] += udpRxLen[activeUdpSocket];	
-
-/*
-	udpBuffer1[50] = '\0';
-	UARTWrite(1, udpBuffer1);
-*/				
+			
 			} //end ring buffer
 		}
 		activeUdpSocket++;
@@ -237,7 +233,7 @@ void CmdCheck()
 ****************************************************************************/
 int main(void)
 
-{
+{	
 	//	Queue creation - will be used for communication between the stack and other tasks
 	xQueue = xQueueCreate(3, sizeof (int));
 
@@ -249,9 +245,9 @@ int main(void)
 
 	// Initializing the UART for the debug
 	#if defined	(STACK_USE_UART)
-	uartinit(1,19200);
-	uarton(1);
-	uartwrite(1, "Flyport starting...");
+	UARTInit(1, UART_DBG_DEF_BAUD);
+	UARTOn(1);
+	StackDebug("Flyport starting...");
 	#endif	
 	
 	//	RTOS starting
@@ -265,14 +261,15 @@ int main(void)
 		vTaskStartScheduler();
 	}
 	
-	#if defined	(STACK_USE_UART)
-	UARTWrite(1, "Unexpected end of program...\r\n");
-	#endif
+	StackDebug("Unexpected end of program...\r\n");
+
 	while(1);
 	return -1;
 }
 
-
+#if defined (FLYPORT_WF)
+static DWORD tick01,tick02;
+#endif
 /*****************************************************************************
  FUNCTION 	TCPIPTask
 			Main function to handle the TCPIP stack
@@ -286,21 +283,24 @@ void TCPIPTask()
 	WFConnection = WF_CUSTOM;
 	ConnectionProfileID = 0;
 	static DWORD dwLastIP = 0;
-	WFStatus = NOT_CONNECTED;
+	_WFStat = NOT_CONNECTED;
 	dwLastIP = 0;
 	//	Function pointers for the callback function of the TCP/IP and WiFi stack 
 
-#if defined (FLYPORT)
+#if defined (FLYPORT_WF)
 	FP[1] = cWFConnect;
 	FP[2] = cWFDisconnect;
 	FP[3] = cWFScan;
 	FP[5] = cWFPsPollDisable;
 	FP[6] = cWFPsPollEnable;
 	FP[7] = cWFScanList;
+#if defined (FLYPORT_G)
+	FP[8] = cRSSIUpdate;
+#endif
 	FP[10] = cWFStopConnecting;
 	
 #endif
-#if defined (FLYPORTETH)
+#if defined (FLYPORT_ETH)
 	FP[1] = cETHRestart;
 #endif
 	FP[16] = cTCPRxFlush;
@@ -330,20 +330,24 @@ void TCPIPTask()
 	FP[35] = cUDPGenericOpen;
 	FP[36] = cUDPWrite;
 	FP[37] = cUDPGenericClose;
-        FP[38] = cUDPMultiOn;
+    FP[38] = cUDPMultiOn;
 	#endif
 	
 	// Initialize stack-related hardware components that may be 
 	// required by the UART configuration routines
 	
-	// Initialization of tick only at the startup of the device
+	// Initialization of tick and of DHCPs SM only at the startup of the device
 	if (hFlyTask == NULL)
 	{
 	    TickInit();
+	    #if defined STACK_USE_DHCP_SERVER
+	    DHCPServerSMInit();
+	    #endif
 	}  
 	#if defined(STACK_USE_MPFS) || defined(STACK_USE_MPFS2)
 	MPFSInit();
 	#endif
+
 	// Initialize Stack and application related NV variables into AppConfig.
 	InitAppConfig();
 
@@ -357,8 +361,15 @@ void TCPIPTask()
 	}
 	
 	#if defined(WF_CS_TRIS)
-	if (WFStatus == CONNECTION_LOST)	
-		WF_Connect(WFConnection);
+	//	On startup no connection profile should be present inside WiFi module, so a new one is created
+	UINT8 listIds = 0;
+	WF_CPGetIds(&listIds);
+	if (listIds == 0)
+	{
+		WF_CPCreate(&ConnectionProfileID);
+	}
+	//	Logical connection state initialization
+	SetLogicalConnectionState(FALSE);
     #endif
 
 
@@ -367,6 +378,7 @@ void TCPIPTask()
     ZeroconfLLInitialize();
 	#endif
 
+	
 	#if defined(STACK_USE_ZEROCONF_MDNS_SD)
 	mDNSInitialize(MY_DEFAULT_HOST_NAME);
 	mDNSServiceRegister(
@@ -384,9 +396,7 @@ void TCPIPTask()
 
 	//	INITIALIZING UDP
 	#if MAX_UDP_SOCKETS_FREERTOS>0
-	#if defined	(STACK_USE_UART)
-	UARTWrite(1, "Initializing UDP...\r\n");
-	#endif
+	StackDebug("Initializing UDP...\r\n");
 	UDPInit();
 	activeUdpSocket=0;
 	while (activeUdpSocket < MAX_UDP_SOCKETS_FREERTOS) 
@@ -433,17 +443,23 @@ void TCPIPTask()
 		xTaskCreate(FlyportTask,(signed char*) "FLY" , (configMINIMAL_STACK_SIZE * 4), 
 		NULL, tskIDLE_PRIORITY + 1, &hFlyTask);	
 	}
+	//	DEBUG code - Firmware version on UART 1
+	#ifdef FW_VER_ON_U1
+	char fwVerString[30];
+	tWFDeviceInfo deviceInfo;
+	WF_GetDeviceInfo(&deviceInfo); 
+	sprintf(fwVerString,"ver.%02x%02x\n", deviceInfo.romVersion , deviceInfo.patchVersion);
+	StackDebug(fwVerString);
+	#endif
 //-------------------------------------------------------------------------------------------
 //|							--- COOPERATIVE MULTITASKING LOOP ---							|
 //-------------------------------------------------------------------------------------------
     while(1)
     {
-        #if defined (FLYPORT)
-		if (WFStatus != TURNED_OFF)
+        #if defined (FLYPORT_WF)
+		if (_WFStat != TURNED_OFF)
 		{
-			//	Check to verify the connection. If it's lost or failed, the device tries to reconnect
-			if ((WFStatus == CONNECTION_LOST) || (WFStatus == CONNECTION_FAILED)) 	
-				WF_Connect(WFConnection);
+
         #else
         {
         #endif
@@ -491,11 +507,38 @@ void TCPIPTask()
 			BerkeleyTCPServerDemo();
 			BerkeleyUDPClientDemo();
 			#endif
-			
+
+
 			// Check on the queue to verify if other task have requested some stack function
 			xStatus = xQueueReceive(xQueue,&Cmd,0);
 			CmdCheck();
-	
+			#if defined (FLYPORT_WF)
+			//	Check to verify the connection. If it's lost or failed, the device tries to reconnect
+			switch(_WFStat)
+			{
+				case CONNECTION_LOST:
+				case CONNECTION_FAILED:
+					tick01 = TickGetDiv64K();
+					_WFStat = RECONNECTING;		
+					break;
+				case RECONNECTING:
+					tick02 = TickGetDiv64K();
+					if ((tick02 - tick01) >= 2)
+					{
+						_WFStat = CONNECTING;
+						WF_Connect(WFConnection);
+					}	
+					break;
+			}
+			//	RSSI management
+			if (myRSSI.stat == RSSI_TO_READ)
+			{
+				tWFScanResult rssiScan;
+				WF_ScanGetResult(0, &rssiScan);
+				myRSSI.value = rssiScan.rssi;
+				myRSSI.stat = RSSI_VALID;
+			}	
+			#endif
 	        // If the local IP address has changed (ex: due to DHCP lease change)
 	        // write the new IP address to the LCD display, UART, and Announce 
 	        // service
@@ -503,16 +546,11 @@ void TCPIPTask()
 			{
 				dwLastIP = AppConfig.MyIPAddr.Val;
 				
-				#if defined(STACK_USE_UART)
-					UARTWrite(1,"\r\nNew IP Address: ");
-				#endif
+				StackDebug("\r\nNew IP Address: ");
 
 				DisplayIPValue(AppConfig.MyIPAddr);
 	
-				#if defined(STACK_USE_UART)
-					UARTWrite(1,"\r\n");
-				#endif
-	
+				StackDebug("\r\n");
 	
 				#if defined(STACK_USE_ANNOUNCE)
 					AnnounceIP();

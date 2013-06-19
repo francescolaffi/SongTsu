@@ -524,7 +524,6 @@ long FTPFileSize(TCP_SOCKET cmdSock, char fileName[])
 	int res;
 	strcpy(cmd, "SIZE ");
 	strcat(cmd, fileName);
-	strcat(cmd, "\r\n");
 	
 	FTPRxFlush(cmdSock, 100);
 	res = FTPSendCmd(cmdSock, cmd, len, 12);
@@ -707,7 +706,7 @@ int FTPStreamOpen(TCP_SOCKET cmdSock, char fileName[], char mode[])
 			}
 		}	
 		
-		//	Append file command APPE
+		//	Append file command APPE/STOR/RETR...
 		FTPMultiWrite(cmdSock, (BYTE*)mode,5);
 		FTPMultiWrite(cmdSock, (BYTE*)fileName, strlen(fileName));
 		FTPMultiWrite(cmdSock, (BYTE*)"\r\n", 2);
@@ -718,7 +717,6 @@ int FTPStreamOpen(TCP_SOCKET cmdSock, char fileName[], char mode[])
 			errHandling(&dataSocket);
 			return FTP_ERR_SERV_TIMEOUT;
 		}	
-		FTPRxFlush(cmdSock, 100);
 		
 	 	if ( ( strcmp(code,"150") != 0 ) && ( strcmp(code,"125") != 0 ) )
 			return atoi(code);
@@ -778,15 +776,22 @@ long FTPStreamWrite(char strWrite[], long toWrite)
 
 long FTPStreamRead(char dest[], int len, BYTE timeout)
 {
-	long count = 0;
+	long count = 0, count2 = 0;
 	int toRead;
 	DWORD tick1, tick2;
-	if ( (FTPisConn(dataSocket)) && (streamStat == FTP_STREAM_READING) )
+	if (streamStat == FTP_STREAM_READING)
 	{
 		tick1 = TickGetDiv64K();
 		while (count < len)
 		{
 			toRead = FTPRxLen(dataSocket);
+			while ((toRead < len) && (toRead + streamRBytes < streamLen))
+			{
+				toRead = FTPRxLen(dataSocket);
+				count2++;
+				if (count2 == 3)
+					break;
+			}	
 			//	Resizing bytes to read according to buffer size
 			if (toRead > (len - count))
 				toRead = len - count;
@@ -805,7 +810,7 @@ long FTPStreamRead(char dest[], int len, BYTE timeout)
 					return count;
 				}
 				tick2 = TickGetDiv64K();
-				IOPut(o4, toggle);
+				
 				if ( (tick2 -tick1) > timeout)
 				{	
 					//	Timeout occured during reading, a check on data connection is required
@@ -823,20 +828,14 @@ long FTPStreamRead(char dest[], int len, BYTE timeout)
 					}
 				}
 			}
-			/*
-			else
-			{
-				sprintf(dbg, "count:%d\n", count);
-				UARTWrite(1, dbg);
-				sprintf(dbg, "toRead:%d\n", toRead);
-				UARTWrite(1, dbg);
-			}
-			*/
 		}
 		return count;
 	} 
 	else if (!FTPisConn(dataSocket))
+	{
+		errHandling(&dataSocket);
 		return FTP_DATA_NO_CONNECTED;
+	}
 	else 
 		return FTP_STREAM_INVALID_OP;
 	
@@ -1015,7 +1014,7 @@ static int FTPMultiWrite(TCP_SOCKET multSock, BYTE multStr[], int multLen)
 
 
 
-#define DEBUG
+// #define DEBUG
 void debug(char* dbg)
 {
 	#ifdef DEBUG

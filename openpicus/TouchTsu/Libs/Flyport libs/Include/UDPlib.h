@@ -72,18 +72,19 @@ extern UDP_PORT xUDPPort[MAX_UDP_SOCKETS_FREERTOS];
 extern BYTE callbackUdpSocket;
 extern 	BYTE* p_udp_data[MAX_UDP_SOCKETS_FREERTOS];
 extern 	BYTE* p_udp_wifiram[MAX_UDP_SOCKETS_FREERTOS];
-extern NODE_INFO* udpIPAddress;
+extern DWORD xUDPRemoteHost;
 extern WORD xUDPLocalPort;
 extern WORD xUDPRemotePort;
 extern WORD udpWord;
 extern int udpInt;
 extern BYTE* udpByte;
 
+
 extern int udpFrontEndStat;
 extern int udpFrontEndStatRet;
 extern BOOL udpBool;
 extern BOOL UDPoverflowFlag[MAX_UDP_SOCKETS_FREERTOS];
-
+extern BYTE xByte2;
 //	Frontend variables
 extern int xFrontEndStat;
 extern int xFrontEndStatRet;
@@ -93,12 +94,12 @@ extern int xErr;
 extern xQueueHandle xQueue;
 extern xSemaphoreHandle xSemFrontEnd;
 
-BYTE UDPClientOpen (char* , char*);
-BYTE UDPServerOpen (char*);
-BYTE UDPBroadcastOpen (char*);
+BYTE UDPClientOpen (char udpaddr[], char udpport[]);
+BYTE UDPServerOpen (char udpport[]);
+BYTE UDPBroadcastOpen (char udpport[]);
 
-BYTE UDPClientClose(UDP_SOCKET);
-BYTE UDPServerClose(UDP_SOCKET);
+BYTE UDPClientClose(BYTE sock);
+BYTE UDPServerClose(BYTE sock);
 
 WORD UDPWrite(BYTE , BYTE* , int);
 int cUDPWrite();
@@ -112,7 +113,7 @@ int UDPRead(BYTE, char*, int);
 int UDPpRead(BYTE, char*, int, int);
 
 //internal use
-BYTE UDPGenericOpen(char* , NODE_INFO* , char*);
+BYTE UDPGenericOpen(char localport[], DWORD remhost, char remoteport[], BYTE connType);
 int cUDPGenericOpen();
 
 BYTE UDPGenericClose(BYTE);

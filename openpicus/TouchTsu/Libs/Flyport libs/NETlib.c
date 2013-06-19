@@ -83,6 +83,9 @@ The Flyport modules have two possible profile to use: a DEFAULT one (fixed in fi
 #include "libpic30.h"
 
 extern APP_CONFIG NETConf[];
+#if defined (FLYPORT_WF)
+extern RSSI_VAL myRSSI;
+#endif
 
 /// @cond debug
 //	Frontend variables
@@ -106,11 +109,10 @@ extern xQueueHandle xQueue;
 extern xSemaphoreHandle xSemFrontEnd;
 extern xTaskHandle hTCPIPTask;
 
-extern UINT8 ConnectionProfileID;
 /// @endcond
 
 /**
- * NETCustomSave - When the Flyport is powered down, all the changes on the CUSTOM profile will be lost, because are stored in RAM. To prevent the loosing of all the data, you can use the 
+ * When the Flyport is powered down, all the changes on the CUSTOM profile will be lost, because are stored in RAM. To prevent the loosing of all the data, you can use the 
  command WFCustomSave. It saves all the network parameters for the CUSTOM connection profile. No need to set anything, the data will be saved in a reserved part of the flash memory, so it will
  be available also if you power off the Flyport.
  * \param None
@@ -120,7 +122,9 @@ void NETCustomSave()
 {
 	_erase_flash(0x2A000);
 	int in1=0;
-	int *wmem = (int*)NETConf;
+	int *wmem = (int*)&NETConf[0];
+	int *stopmem = (int*)&NETConf[1];
+	int wlenmax = (int)((BYTE*)stopmem - (BYTE*)wmem);
 	unsigned int offset;
 
 	NVMCON = 0x4003; // Initialize NVMCON
@@ -131,12 +135,7 @@ void NETCustomSave()
 	asm("DISI #5"); 	
 	__builtin_write_NVM(); 	
 
-	#ifdef FLYPORTETH
-	while (in1 < 47)
-	#endif
-	#ifdef FLYPORT
-	while (in1 < 153)
-	#endif
+	while (in1 < wlenmax)
 	{
 
 		unsigned long progAddr = 0x2A002+in1; 			// Address of word to program
@@ -156,7 +155,7 @@ void NETCustomSave()
 }
 
 /**
- * NETCustomDelete - Deletes the custom settings for the network profile CUSTOM.
+ * Deletes the custom settings for the network profile CUSTOM.
  * \param None
  * \return None
  */
@@ -167,7 +166,7 @@ void NETCustomDelete()
 
 
 /**
- * NETCustomExist - Verifies if in memory is present some data for the CUSTOM profile. It can be useful at the startup of the device, because it's possible to control if in a previous session (before any power off)has been saved some configuration data.
+ * Verifies if in memory is present some data for the CUSTOM profile. It can be useful at the startup of the device, because it's possible to control if in a previous session (before any power off)has been saved some configuration data.
  * \param None
  * \return FALSE: no data present.
  * \return TRUE: valid data present.
@@ -192,7 +191,7 @@ BOOL NETCustomExist()
 
 
 /**
- * NETCustomLoad - Loads from the flash memory the previously set parameters for the CUSTOM profile. 
+ * Loads from the flash memory the previously set parameters for the CUSTOM profile. 
  * \param None
  * \return None
  */
@@ -200,16 +199,13 @@ void NETCustomLoad()
 {
 	int in1 = 0;
 	int *rmem = (int*) &NETConf[0];
+	int *stopmem = (int*)&NETConf[1];
+	int wlenmax = (int)((BYTE*)stopmem - (BYTE*)rmem);
 	int rdoffset;
 	int vRead,vRead1;
 	long int addr1 = 0x2A002;
 
-	#ifdef FLYPORTETH
-	while (in1 < 47)
-	#endif
-	#ifdef FLYPORT
-	while (in1 < 153)
-	#endif
+	while (in1 < wlenmax)
 	{
 		TBLPAG = (((addr1+in1) & 0x7F0000)>>16);
 		rdoffset = ((addr1+in1) & 0x00FFFF);
@@ -224,7 +220,7 @@ void NETCustomLoad()
 
 
 /**
- * NETSetParam - With this command is possible to change any network parameter of the CUSTOM profile.
+ * With this command is possible to change any network parameter of the CUSTOM profile.
  * \param paramtoset - the parameter to change. 
  * \param paramstring - value of the parameter. <B>Note:</B> Some parameters are available only for Flyport WiFi module.
  * \return None.
@@ -244,8 +240,9 @@ void NETCustomLoad()
  */
 void NETSetParam(int paramtoset , char paramstring[])
 {
-	int ind1;
+	int i;
 	BOOL nbns_flag = FALSE;
+	
 	switch (paramtoset)
 	{
 	//	Changing Flyport IP address
@@ -272,21 +269,21 @@ void NETSetParam(int paramtoset , char paramstring[])
 		break;
 	//	Netbios name
 	case NETBIOS_NAME:
-		for (ind1 = 0; ind1 < 15; ind1++)
+		for (i = 0; i < 15; i++)
 		{
-			if ( (paramstring[ind1] != '\0') && (!nbns_flag) )
+			if ( (paramstring[i] != '\0') && (!nbns_flag) )
 			{
 				// UPPERCASING NETBIOS NAME
-				if ( (paramstring[ind1] > 96) && (paramstring[ind1] < 123) )
-					NETConf[0].NetBIOSName[ind1] = paramstring[ind1]-32;
+				if ( (paramstring[i] > 96) && (paramstring[i] < 123) )
+					NETConf[0].NetBIOSName[i] = paramstring[i]-32;
 				else
-					NETConf[0].NetBIOSName[ind1] = paramstring[ind1];
+					NETConf[0].NetBIOSName[i] = paramstring[i];
 			}
-			else if (paramstring[ind1] == '\0')
+			else if (paramstring[i] == '\0')
 				nbns_flag = TRUE;
 	
 			if (nbns_flag)
-				NETConf[0].NetBIOSName[ind1] = 0x0020;
+				NETConf[0].NetBIOSName[i] = 0x0020;
 		}
 		NETConf[0].NetBIOSName[15] = '\0';
 		break;
@@ -297,7 +294,7 @@ void NETSetParam(int paramtoset , char paramstring[])
 		else if (!strcmp(paramstring,"Off"))
 			NETConf[0].Flags.bIsDHCPEnabled = FALSE;
 		break;
-	#ifdef FLYPORT
+	#if defined FLYPORT_WF
 	//	SSID name
 	case SSID_NAME:
 		strcpy( (char *) NETConf[0].MySSID,paramstring);
@@ -308,8 +305,17 @@ void NETSetParam(int paramtoset , char paramstring[])
 			NETConf[0].networkType = WF_INFRASTRUCTURE;
 		else if (!strcmp(paramstring,"adhoc"))
 			NETConf[0].networkType = WF_ADHOC;
-	#endif
+		#if defined FLYPORT_G
+			else if (!strcmp(paramstring,"softap"))
+			NETConf[0].networkType = WF_SOFT_AP;
+		#endif
+		break;
+	case BSSID:
+		memcpy(NETConf[0].myBSSID, (BYTE*)paramstring, 6);
+		break;
+	#endif	
 	}
+
 }
 
 /// #cond debug
@@ -317,10 +323,10 @@ static int ToSend = 0;
 /****************************************************
  *	ETHERNET MANAGEMENT
  ****************************************************/
-#if defined (FLYPORTETH)
+#if defined (FLYPORT_ETH)
 /// @endcond
 /**
- * ETHRestart - Connects the Flyport Ethernet Module to the network with the specified profle.
+ * Connects the Flyport Ethernet Module to the network with the specified profle.
  * \param pconn - Specifies the profile used to connect to the network. The following profile are available:
 				  ETH_DEFAULT : uses the settings choosen in the IDE TCP/IP setup. This profile cannot be changed.
 				  ETH_CUSTOM : this profile can be customized by the user and even saved in the flash memory. At the startup is identical to the default, but you can change it anytime you want.
@@ -371,7 +377,7 @@ int cETHRestart()
 /****************************************************
  *	WIFI MANAGEMENT
  ****************************************************/
-#if defined (FLYPORT)
+#if defined (FLYPORT_WF)
 
 extern tWFNetwork xNet;
 extern int WFStatusold;
@@ -416,7 +422,7 @@ void WFGeneric(int function)
 /// @endcond
 
 /**
- * WFConnect - Connects the Flyport WiFi Module to the network with the specified profle.
+ * Connects the Flyport WiFi Module to the network with the specified profle.
  * \param pconn - Specifies the profile used to connect to the network. The following profile are available:
 				  WF_DEFAULT : uses the settings choosen in the IDE TCP/IP setup. This profile cannot be changed.
 				  WF_CUSTOM : this profile can be customized by the user and even saved in the flash memory. At the startup is identical to the default, but you can change it anytime you want.
@@ -424,80 +430,150 @@ void WFGeneric(int function)
  */
 void WFConnect(int pconn)
 {
-	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
-	if (WFStatus == NOT_CONNECTED)
+	BOOL opok = FALSE;
+	while (!opok)
 	{
-		BOOL opok = FALSE;
-		while (!opok)
+		while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
+		xErr = 0;
+		if (xFrontEndStat == 0)
+		{	
+			//	OpCode and requested return value from the stack
+			ToSend = 1;
+			xFrontEndStatRet = 2;
+			
+			//	Passing function parameter
+			xInt = pconn;										//	Connection profile to use
+			
+			//	Queue and status setting, callback is ready to be fired when semaphore is released
+			xQueueSendToBack(xQueue,&ToSend,0);					//	Send requested command to the stack
+			xFrontEndStat = 1;
+			xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE	
+
+			opok = TRUE;
+		}
+		else
 		{
-			WFStatus = CONNECTING;
-			if (xFrontEndStat == 0)
-			{	
-				ToSend = 1;
-				xFrontEndStatRet = 2;
-				xInt = pconn;
-				
-				xQueueSendToBack(xQueue,&ToSend,0);					//	Send TCPIsConnected command to the stack
-				xFrontEndStat = 1;
-				xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE	
-
-				while (xFrontEndStat != 2);								//	Waits for stack answer
-				while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
-
-				xFrontEndStat = 0;
-				xSemaphoreGive(xSemFrontEnd);							//	xSemFrontEnd GIVE
-				taskYIELD();
-				opok = TRUE;
-			}
-			else
+			xSemaphoreGive(xSemFrontEnd);
+			taskYIELD();
+			//	If WiFi module if turned OFF, function doesn't do anything
+			if (xFrontEndStat == -1)
 			{
-				xSemaphoreGive(xSemFrontEnd);
-				taskYIELD();
-				//	If WiFi module if turned OFF, function doesn't do anything
-				if (xFrontEndStat == -1)
-				{
-					WFStatus = NOT_CONNECTED;
-					return;
-				}
+				return;
 			}
 		}
 	}
-	else
-	{
-		xSemaphoreGive(xSemFrontEnd);
-		taskYIELD();	
-	}
+
+	while (xFrontEndStat != 2);							//	Waits for stack answer
+	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);	//	xSemFrontEnd TAKE
+
+	xFrontEndStat = 0;									//	TCP/IP stack newly ready to accept commands
+	xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE
+	taskYIELD();
 }
 
 
 /**
- * WFDisconnect - Disconnects the device from the network. No parameters required.
+ * Disconnects the device from the network. No parameters required.
  * \param None
  * \return None
  */
 void WFDisconnect()
 {
+#if defined (FLYPORT_G)
+	if(AppConfig.networkType == WF_SOFT_AP)
+	{
+		WFHibernate();
+		vTaskDelay(200);
+		WFOn();
+	}
+	else
+#endif
 	WFGeneric(2);
 }
 
 
 
 /**
- * WFScan - Starts a scan to detect all the WiFi networks available. The function doesn't return anything. When it has finished, it generates an event, you can catch in the WiFi events file.
+ * Starts a scan to detect all the WiFi networks available. The function doesn't return anything. When it has finished, it generates an event, you can catch in the WiFi events file.
  * \param None
  * \return None. The number of the retrieved WiFi networks found is passed in the function WF_events like an "event info". All the data for the retrieved networks can be accessed with the command WFScanList.
  * \attention The command must be issued when the device is not connected to any network, otherwise it won't give any error message, but it won't work.
  */
 void WFScan()
 {
-	if ( (WFStatus != CONNECTING) && (WFStatus != SCANNING) )
+	if ( (_WFStat != CONNECTING) && (_WFStat != SCANNING) && (_WFStat != GETTING_RSSI) )
 		WFGeneric(3);
 }
 
+#ifdef FLYPORT_G
+void RSSIUpdate()
+{
+	if ( ( _WFStat == CONNECTED ) && (RSSIStatus() != RSSI_IN_PROGRESS) )
+	{
+		myRSSI.stat = RSSI_IN_PROGRESS;
+		WFGeneric(8);
+	}
+	else
+	{
+		if (_WFStat != CONNECTED)
+			myRSSI.stat = RSSI_NO_CONN;
+	}
+}
 
 
+int cRSSIUpdate()
+{
+	BYTE oldChannlList[11], chanLen, oldBSSID[6];
+	if (AppConfig.networkType == WF_INFRASTRUCTURE)
+	{
+	    tWFConnectContext context;
+		WFStatusold = _WFStat;
+		_WFStat = GETTING_RSSI;
+		
+		//	The bssid and channel list are taken from the actual connection context
+		WF_CMGetConnectContext(&context);
+		
+		//	Getting actual channel list and bssid from connection profile
+		WF_CPGetBssid(1, oldBSSID);
+		WF_CAGetChannelList(oldChannlList, &chanLen);
+			
+		
+		//	Setting the proper channel and bssid 	
+		WF_CPSetBssid(1, context.bssid);
+		WF_CASetChannelList(&(context.channel), 1);
+	
+		//	Scan is issued with actual channel list, bssid and ssid
+		WF_Scan(1);
+		//	Setting back the old channel list, bssid and ssid
+		WF_CASetChannelList(oldChannlList, chanLen);
+		WF_CPSetBssid(1, oldBSSID);
+	}
+	else
+		myRSSI.stat = RSSI_NOT_VALID;
+	return 0;
+}
+
+//	Encapsulation functions for myRSSI variable
+int RSSIValue()
+{
+	return myRSSI.value;
+}
+
+BYTE RSSIStatus()
+{
+	int a = myRSSI.stat; 
+	if (a == RSSI_TO_READ) 
+		return RSSI_IN_PROGRESS;
+	else
+	{
+		return a;
+	}
+}
+
+
+#endif
 /**
- * WFScanList - This command must be issued after a WFScan request has been completed (so the event is generated). The WFScan command returns in the event handler the number of the WiFi networks found,
+ * This command must be issued after a WFScan request has been completed (so the event is generated). The WFScan command returns in the event handler the number of the WiFi networks found,
  but all the data related to the networks, can be accessed using the function WFScanList. 
  * \param ntscn - number of the wifi network (1 to number of the found networks).
  * \return A tWFNetwork structure, which contains all the informations about the specified network.
@@ -547,57 +623,80 @@ tWFNetwork WFScanList(int ntscn)
 
 
 /**
- * WFStopConnecting - When the command WFConnect is lauched, the device tries to connect to the selected WiFi network until it doesn't find it.
+ * When the command WFConnect is lauched, the device tries to connect to the selected WiFi network until it doesn't find it.
  *  If you want to stop the retries, you have to issu the command WFStopConnecting.
  * \param None
  * \return None
  */
 void WFStopConnecting()
 {
+	/*
 	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
-	if (WFStatus == CONNECTING)
+	if ( (_WFStat == CONNECTING) || (_WFStat == CONNECTION_LOST) || (_WFStat == CONNECTION_FAILED))
 	{
-		BOOL opok = FALSE;
-		while (!opok)
-		{
-			if (xFrontEndStat == 0)
-			{	
-				ToSend = 10;
-				xFrontEndStatRet = 2;
-				
-				xQueueSendToBack(xQueue,&ToSend,0);					//	Send TCPIsConnected command to the stack
-				xFrontEndStat = 1;
-				xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE	
-				opok = TRUE;
-			}
-			else
-			{
-				xSemaphoreGive(xSemFrontEnd);
-				taskYIELD();
-				//	If WiFi module if turned OFF, function doesn't do anything
-				if (xFrontEndStat == -1)
-					return;
-			}
-		}
-	
-		while (xFrontEndStat != 2);								//	Waits for stack answer
+	*/
+	BOOL opok = FALSE;
+	while (!opok)
+	{
 		while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
+		xErr = 0;
 
-		xFrontEndStat = 0;
-		xSemaphoreGive(xSemFrontEnd);							//	xSemFrontEnd GIVE
-		taskYIELD();
+		if (xFrontEndStat == 0)
+		{	
+			//	OpCode and requested return value from the stack
+			ToSend = 10;
+			xFrontEndStatRet = 2;
+			
+			//	Queue and status setting, callback is ready to be fired when semaphore is released
+			xQueueSendToBack(xQueue,&ToSend,0);					//	Send command to the stack
+			xFrontEndStat = 1;
+			xSemaphoreGive(xSemFrontEnd);						//	xSemFrontEnd GIVE	
+			
+			opok = TRUE;
+		}
+		else
+		{
+			xSemaphoreGive(xSemFrontEnd);
+			taskYIELD();
+			//	If WiFi module if turned OFF, function doesn't do anything
+			if (xFrontEndStat == -1)
+				return;
+		}
 	}
-	else
-	{
-		xSemaphoreGive(xSemFrontEnd);
-		taskYIELD();	
-	}
+
+	while (xFrontEndStat != 2);								//	Waits for stack answer
+	while (xSemaphoreTake(xSemFrontEnd,0) != pdTRUE);		//	xSemFrontEnd TAKE
+
+	xFrontEndStat = 0;										//	TCP/IP stack newly ready to accept commands
+	xSemaphoreGive(xSemFrontEnd);							//	xSemFrontEnd GIVE
+	taskYIELD();
 }
 
 
+void WFSetChannel(unsigned int chSets)
+{
+	int i, j = 0;
+	unsigned int chBitMask = 0x0001;
+	NETConf[0].channelListSize = 0;
+	for (i=0; i<11; i++)
+	{
+		if (chSets & chBitMask)
+		{
+			NETConf[0].channelList[j] = i+1;
+			j++; 
+		}
+		chBitMask <<= 1;
+	}
+	NETConf[0].channelListSize = j;
+	if (NETConf[0].channelListSize == 0)
+	{
+		NETConf[0].channelListSize = 1;
+		NETConf[0].channelList[0] = 1;	
+	}
+ }
 
 /**
- * WFSetSecurity - This command is used to set all the security parameters for the WF_CUSTOM connection profile
+ * This command is used to set all the security parameters for the WF_CUSTOM connection profile
  * \param mode - the security mode. Valid security mode are the following:<BR>
  <UL>
 	<LI><B>WF_SECURITY_OPEN:</B> no security.</LI>
@@ -631,17 +730,18 @@ void WFSetSecurity(BYTE mode , char * keypass , BYTE keylen , BYTE keyind)
 }
 
 /**
- * WFHibernate - Enables Hibernate mode on the MRF24WB0M, which effectively turns off the WiFi. The microcontroller is still completely running, so all the modules are working (UART, SPI, analog inputs...). To turn on again the module, use the command WFOn().
+ * Enables Hibernate mode on the MRF24WB0M, which effectively turns off the WiFi. The microcontroller is still completely running, so all the modules are working (UART, SPI, analog inputs...). To turn on again the module, use the command WFOn().
  * \param None
  * \return None
  */
 void WFHibernate()
 {
-	WFStatus = TURNED_OFF;
+	_WFStat = TURNED_OFF;
 	if (hTCPIPTask != NULL)
 	{
-		LATEbits.LATE6 = 1;				// Wi-Fi module hibernation
+		WF_HIBERNATE_IO = 1;				// Wi-Fi module hibernation
 		vTaskDelete(hTCPIPTask);		// TCP task delete
+		vTaskDelay(5);
 		hTCPIPTask = NULL;
 	}
 	xFrontEndStat = -1;					// Frontend = -1 blocks all TCP/IP system calls
@@ -649,18 +749,19 @@ void WFHibernate()
 
 
 /**
- * WFSleep - Turns off the WiFi module and put the microcontroller in sleep mode, to obtain maximum power saving mode. 
+ * Turns off the WiFi module and put the microcontroller in sleep mode, to obtain maximum power saving mode. 
  * \param none
  * \return None
   * \warning: After the command is issued, no the module is completely in sleep mode, no modules are active (UART, SPI, analog inputs...). The only way to awake the module is issue an external interupt. So before the WFSleep command, an interrupt must be set.
  */
 void WFSleep()
 {
-	WFStatus = TURNED_OFF;
+	_WFStat = TURNED_OFF;
 	if (hTCPIPTask != NULL)
 	{
-		LATEbits.LATE6 = 1;				// Wi-Fi module hibernation
+		WF_HIBERNATE_IO = 1;				// Wi-Fi module hibernation
 		vTaskDelete(hTCPIPTask);		// TCP task delete
+		vTaskDelay(5);
 		hTCPIPTask = NULL;
 	}
 	xFrontEndStat = -1;					// Frontend = -1 blocks all TCP/IP system calls
@@ -672,21 +773,22 @@ void WFSleep()
 
 
 /**
- * WFOn - Turns on the WiFi module after a WFSleep() or WFHibernate() command.
+ * Turns on the WiFi module after a WFSleep() or WFHibernate() command.
  * \param none
  * \return None
  */
 void WFOn()
 {
-	if (WFStatus == TURNED_OFF)
+	if (_WFStat == TURNED_OFF)
 	{
-		LATEbits.LATE6 = 0;					// WiFi module activation
+		WF_HIBERNATE_IO = 0;					// WiFi module activation
 		xFrontEndStat = 0;					// Frontend var = 0 to enable again all the TCP/IP system call
-		
+
 		// Creating again TCP/IP task
 		if (hTCPIPTask == NULL)
 		{
-			xTaskCreate(TCPIPTask, (signed char*) "TCP", STACK_SIZE_TCPIP,
+			int a;
+			a = xTaskCreate(TCPIPTask, (signed char*) "TCP", STACK_SIZE_TCPIP,
 				NULL, tskIDLE_PRIORITY + 1, &hTCPIPTask);
 		}
 	}
@@ -694,7 +796,7 @@ void WFOn()
 
 
 /**
- * WFPsPollEnable - Enables or Disable Power-Save Pool at runtime
+ * Enables or Disable Power-Save Pool at runtime
  * \param ps_active TRUE to enable Poll mode for longer battery life or FALSE to disable PS Poll mode, MRF24WB0M will stay active and not go sleep.
  * \return None
  */
@@ -747,13 +849,13 @@ void WFPsPollEnable(BOOL ps_active)
 //****************************************************************************
 int cWFDisconnect()
 {
-	if (WFStatus == CONNECTED)
+	if (_WFStat == CONNECTED)
 	{
 		WF_CMDisconnect();
-		WFStatus = NOT_CONNECTED;
+		_WFStat = NOT_CONNECTED;
 	}
-	if (WFStatus == CONNECTION_LOST)
-		WFStatus = NOT_CONNECTED;
+	if (_WFStat == CONNECTION_LOST)
+		_WFStat = NOT_CONNECTED;
 	return 0;
 }
 
@@ -764,9 +866,26 @@ int cWFDisconnect()
 //****************************************************************************
 int cWFScan()
 {
-	WFStatusold = WFStatus;
-	WFStatus = SCANNING;
-	WF_Scan(WF_SCAN_ALL);
+	BYTE oldSSID[32];
+	UINT8 len, oldChannlList[11], chanLen;
+	WFStatusold = _WFStat;
+	_WFStat = SCANNING;
+	
+	//	SSID management
+	//	Getting actual SSID from connection profile
+	WF_CPGetSsid(1, oldSSID, &len);
+
+	//	Setting new SSID for connection profile scan
+	WF_CPSetSsid(1, (BYTE*)"", 0);	
+		
+	//	Channel list management
+	WF_CAGetChannelList(oldChannlList, &chanLen);
+	WF_CASetChannelList(oldChannlList, 0);
+
+	WF_Scan(1);
+	//	Setting back the old SSID and channel list
+	WF_CPSetSsid(1, oldSSID, len);	
+	WF_CASetChannelList(oldChannlList, chanLen);
 	return 0;
 }
 
@@ -820,7 +939,10 @@ int cWFScanList()
 	return 0;
 }
 
-
+int WFGetStat()
+{
+	return _WFStat;
+}
 
 
 //****************************************************************************
@@ -829,7 +951,16 @@ int cWFScanList()
 //****************************************************************************
 int cWFStopConnecting()
 {
-	WFStatus = STOPPING;
+	if (_WFStat == CONNECTING) 
+	{
+		_WFStat = STOPPING;
+		return 0;
+	}
+	if ( (_WFStat == CONNECTION_LOST) || (_WFStat == CONNECTION_FAILED) || (_WFStat == RECONNECTING) )
+	{
+		_WFStat = NOT_CONNECTED;
+		return 0;
+	}
 	return 0;
 }
 
@@ -840,7 +971,8 @@ int cWFStopConnecting()
 //****************************************************************************
 int cWFConnect()
 {
-	WF_Connect(xInt);
+	if (_WFStat == NOT_CONNECTED)
+		WF_Connect(xInt);
 	return 0;
 }
 
