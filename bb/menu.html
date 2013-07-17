@@ -14,20 +14,49 @@
 * limitations under the License.
 -->
 
-<div data-bb-type="screen">
-   <div class="logo" style="position:relative;width:100%;height:5%;align:center">Song<img id="imglogo" src="img/iconWhite.png">Tsu</div>
-   <div id="dpic"><img id=ppic /></div>   
+<div data-bb-type="screen" data-bb-effect="fade">
+   <div class="logo" style="position:relative;width:100%;height:5%;align:center">
+      <table style="width:100%;height:100%">
+		    <td style="text-align: right">
+               Song
+			</td>
+			<td style="width:250px">
+			   <img id="imglogo" src="img/iconWhite.png" style="height: 100%" align="center">
+			</td>
+            <td style="text-align: left">			
+			   Tsu
+			</td>
+         </tr>
+       </table>		 
+   </div>
+   <div data-bb-type="activity-indicator" style="text-align: center; margin-right: auto; margin-left: auto; margin-top: 48%;" id="indicator" data-bb-size="large"></div>
+   <div id="dpic" align="center" valign="center" style="display: none;">
+      <div class="thumbs"> 
+         <a target='_blank' STYLE="text-decoration: none;">
+            <img id="ppic" border='0' style="margin-left:auto; margin-top:auto; display:block"/>
+	     </a>
+      </div>
+	  <div class="thumbs"> 
+	     <a rel='license' id="creativelogo" href='http://creativecommons.org/licenses/by/2.0/' target='_blank' STYLE="text-decoration: none;">
+	        <img src='http://i.creativecommons.org/l/by/2.0/80x15.png' alt='Creative Commons Attribution 2.0 Generic License' title='Creative Commons Attribution 2.0 Generic License'/>
+	     </a>&nbsp;&nbsp;by&nbsp;&nbsp;
+	     <a xmlns:cc='http://creativecommons.org/ns#' id="usname" rel='cc:attributionURL' property='cc:attributionName' target='_blank'>
+	        inoc
+	     </a>
+	  </div>	  
+   </div>   
    <div id="audioplayer">
       <table width="100%" height="20%" style="position:absolute;bottom:0;" class="logo">
-	     <tr>
-		    <td colspan=2 id=stitle align=center>			   
-			</td>
-		 </tr>
-		 <tr>
-		    <td align=center>
+         <tr>
+		    <td align=center width="30%">
                <img id=simg />			
 			</td>
-		    <td id=songname align=center>			   
+		    <td>			   
+			   <ul>
+			      <li id="songname"></li>
+				  <li id="albumname"></li>
+				  <li id="artistname"></li>
+			   </ul>
 			</td>
          </tr>
          <tr>
@@ -39,8 +68,10 @@
       </table>		 
    </div>
    <div data-bb-type="action-bar">
-      <div id="search" data-bb-type="action" data-bb-style="tab" data-bb-img="icons/configicon.png" onclick="bb.pushScreen('setupParamsEvent.html', 'config')">Config</div>
-      <div id="search2" data-bb-type="action" data-bb-style="tab" data-bb-img="icons/music.png" onclick="bb.pushScreen('setupParamsEvent.html', 'config')">Massaggio</div>
-      <div id="search3" data-bb-type="action" data-bb-style="tab" data-bb-img="" onclick="bb.pushScreen('setupParamsEvent.html', 'config')">Massaggiatore</div>
+      <div id="search" data-bb-type="action" data-bb-style="tab"  data-bb-img="icons/music.png" onclick="bb.pushScreen('setupParamsEvent.html', 'config')">Massaggio</div>
+      <div id="search2" data-bb-type="action" data-bb-style="tab" data-bb-img="" onclick="bb.pushScreen('bodyback.html', 'bodyback')">Massaggiatore</div>
+	  <div id="search3" data-bb-type="action" data-bb-style="button" data-bb-overflow="true" data-bb-img="icons/info.png" onclick="aboutus()">About us</div>
+      <div id="search4" data-bb-type="action" data-bb-style="button" data-bb-overflow="true" data-bb-img="icons/share.png" onclick="shareBBM()">Share</div>	  
 	</div>
+	<div id="masdata" visible="false"/>
 </div>

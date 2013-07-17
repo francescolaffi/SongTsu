@@ -31,11 +31,12 @@
         </feature>
 	<feature id="blackberry.connection" />
 	<feature id="blackberry.app.event" />
-	<feature id="blackberry.ui.toast" />
-        <feature id="blackberry.sensors" />
+    <feature id="blackberry.sensors" />
+	<feature id="blackberry.invoke" />
+	<feature id="blackberry.ui.dialog" />
 	
 	<rim:permissions>
 	   <rim:permit>read_geolocation</rim:permit>
-           <rim:permit>access_location_services</rim:permit>		
+       <rim:permit>access_location_services</rim:permit>		
 	</rim:permissions>
 </widget>
