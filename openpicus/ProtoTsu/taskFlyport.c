@@ -1,19 +1,45 @@
 #include "taskFlyport.h"
-#include "grovelib.h"
+
+//BYTE g_d1[] = { p2, p5, p10, p12};
+//BYTE g_d2[] = { p4, p6, p11, p14};
+//BYTE g_an[] ={ 1, 2, 3 };
+
+#define ARRAY_LEN(a) (sizeof(a)/sizeof(a[0]))
+#define MATRIX_SIZE 8
+#define ROW_SEL_DELAY 2 // 10us units
+#define COL_SEL_DELAY 1
+#define LOOP_DELAY 20 // ms
+
+// S0(LBS), S1, S2(MSB)
+static const BYTE PIN_OUT_COLS[] = { p2, p4, p5 };
+static const BYTE PIN_OUT_ROWS[] = { p6, p10, p11};
+static const BYTE PIN_IN_TOUCH = 1;
+
+static void InitPorts()
+{
+  int i;
+  for (i = 0; i < ARRAY_LEN(PIN_OUT_COLS); ++i)
+  {
+    IOInit(PIN_OUT_COLS[i], out);
+    IOInit(PIN_OUT_ROWS[i], out);
+  }
+  // analog doesn't need initialization
+}
+
+static void OutAddr3Bits(int addr, const BYTE *pins)
+{
+  IOPut(pins[0], (addr & 0x01) != 0 ? ON : OFF);
+  IOPut(pins[1], (addr & 0x02) != 0 ? ON : OFF);
+  IOPut(pins[2], (addr & 0x04) != 0 ? ON : OFF);
+}
 
 void FlyportTask()
 {	
 	vTaskDelay(100);
-	UARTWrite(1,"Welcome to GROVE NEST example!\r\n");
+	UARTWrite(1,"Welcome to ProtoTsu test program!\r\n");
 
-	// GROVE board
-	void *board = new(GroveNest);
-
-	// GROVE devices	
-	// Digital Input
-	void *button = new(Dig_io, IN);
-	attachToBoard(board, button, DIG1);
-	
+  InitPorts();
+  
 	// Connection to Network
 	#if defined (FLYPORT_WF)
 	WFConnect(WF_DEFAULT);
@@ -27,13 +53,28 @@ void FlyportTask()
 	
 	while(1)
 	{
-		// Check pressure of button
-		if(get(button) != 0)
-		{
-			UARTWrite(1, "button pressed!\r\n");
-			vTaskDelay(20);
-		}
-		
-		
+    int row;
+    for (row = 0; row < MATRIX_SIZE; ++row)
+    {
+      int col;
+      OutAddr3Bits(row, PIN_OUT_ROWS);
+      Delay10us(ROW_SEL_DELAY); // wait for line charge
+      for (col = 0; col < MATRIX_SIZE; ++col)
+      {
+        char s[8];
+        OutAddr3Bits(col, PIN_OUT_COLS);
+        Delay10us(COL_SEL_DELAY); // wait for a stable signal
+        int val = ADCVal(PIN_IN_TOUCH);
+        if (row != 0 || col != 0)
+        {
+          UARTWrite(1, ",");
+        }
+        sprintf(s, "%d", val);
+        UARTWrite(1, s);
+      }
+      UARTWrite(1, "\n");
+    }
+
+		vTaskDelay(LOOP_DELAY);
 	}
 }
