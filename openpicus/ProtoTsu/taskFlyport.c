@@ -15,6 +15,20 @@ static const BYTE PIN_OUT_COLS[] = { p2, p4, p5 };
 static const BYTE PIN_OUT_ROWS[] = { p6, p10, p11};
 static const BYTE PIN_IN_TOUCH = 1;
 
+// table in grams / 10
+#define WEIGHT_COUNT_STEP 16
+static ROM const int WEIGHT[] =
+{
+  3, 7, 11, 14, 16, 19, 22, 24, // count = 0, 16, 32, 48, 64, 80, 96, 112
+  27, 29, 32, 35, 37, 40, 43, 46,
+  49, 52, 55, 58, 61, 64, 68, 71,
+  75, 78, 82, 86, 91, 95, 100, 104,
+  109, 115, 120, 126, 132, 139, 146, 154,
+  162, 170, 180, 190, 201, 213, 226, 241,
+  257, 275, 296, 320, 348, 380, 419, 467,
+  526, 605, 712, 870, 1132, 1673, 3737, 0
+};
+
 static void InitPorts()
 {
   int i;
