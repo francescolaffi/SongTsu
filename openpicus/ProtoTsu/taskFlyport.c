@@ -29,6 +29,18 @@ static ROM const int WEIGHT[] =
   526, 605, 712, 870, 1132, 1673, 3737, 0
 };
 
+static int Interpolate(int a, int b, int pos)
+{
+  return (b * pos + a * (WEIGHT_COUNT_STEP - pos)) / WEIGHT_COUNT_STEP;
+}
+
+static int Convert(int valAdc)
+{
+  int i = valAdc / WEIGHT_COUNT_STEP;
+  int pos = valAdc % WEIGHT_COUNT_STEP;
+  return Interpolate(WEIGHT[i], WEIGHT[i+1], pos);
+}
+
 static void InitPorts()
 {
   int i;
@@ -37,7 +49,7 @@ static void InitPorts()
     IOInit(PIN_OUT_COLS[i], out);
     IOInit(PIN_OUT_ROWS[i], out);
   }
-  // analog doesn't need initialization
+  // analog ping doesn't need initialization
 }
 
 static void OutAddr3Bits(int addr, const BYTE *pins)
@@ -83,7 +95,7 @@ void FlyportTask()
         {
           UARTWrite(1, ",");
         }
-        sprintf(s, "%d", val);
+        sprintf(s, "%d", Convert(val));
         UARTWrite(1, s);
       }
       UARTWrite(1, "\n");
