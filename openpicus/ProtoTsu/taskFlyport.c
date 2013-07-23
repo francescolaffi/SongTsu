@@ -6,8 +6,8 @@
 
 #define ARRAY_LEN(a) (sizeof(a)/sizeof(a[0]))
 #define MATRIX_SIZE 8
-#define ROW_SEL_DELAY 2 // 10us units
-#define COL_SEL_DELAY 1
+#define ROW_SEL_DELAY 1 // 10us units
+#define COL_SEL_DELAY 2
 #define LOOP_DELAY 20 // ms
 
 // S0(LBS), S1, S2(MSB)
@@ -79,17 +79,18 @@ void FlyportTask()
 	
 	while(1)
 	{
-    int row;
-    for (row = 0; row < MATRIX_SIZE; ++row)
+	UARTWrite(1, "R=");
+    int col;
+    for (col = 0; col < MATRIX_SIZE; ++col)
     {
-      int col;
-      OutAddr3Bits(row, PIN_OUT_ROWS);
-      Delay10us(ROW_SEL_DELAY); // wait for line charge
-      for (col = 0; col < MATRIX_SIZE; ++col)
+      int row;
+      OutAddr3Bits(col, PIN_OUT_COLS);
+      Delay10us(COL_SEL_DELAY); // wait for line charge
+      for (row = 0; row < MATRIX_SIZE; ++row)
       {
         char s[8];
-        OutAddr3Bits(col, PIN_OUT_COLS);
-        Delay10us(COL_SEL_DELAY); // wait for a stable signal
+        OutAddr3Bits(row, PIN_OUT_ROWS);
+        Delay10us(ROW_SEL_DELAY); // wait for a stable signal
         int val = ADCVal(PIN_IN_TOUCH);
         if (row != 0 || col != 0)
         {
@@ -98,9 +99,9 @@ void FlyportTask()
         sprintf(s, "%d", Convert(val));
         UARTWrite(1, s);
       }
-      UARTWrite(1, "\n");
     }
+      UARTWrite(1, "\n");
 
-		vTaskDelay(LOOP_DELAY);
+	  //vTaskDelay(LOOP_DELAY);
 	}
 }
