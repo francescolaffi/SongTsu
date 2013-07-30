@@ -1,1 +1,13 @@
 .idea
+*.dsk
+*.local
+*.identcache
+*.~*
+*.tvsconfig
+dcu/
+*.dat
+*.orig
+PressureMatrixMonitor*.exe
+*_EventLog.txt
+*.dcu
+dunit.ini

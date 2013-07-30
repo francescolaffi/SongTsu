@@ -1,0 +1,48 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{B362C1DE-98A3-456C-A4F4-D0F3CE4CF2AA}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="PressureMatrixMonitor.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="Test\PressureMatrixMonitorTests.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="PressureMatrixMonitor">
+			<MSBuild Projects="PressureMatrixMonitor.dproj"/>
+		</Target>
+		<Target Name="PressureMatrixMonitor:Clean">
+			<MSBuild Targets="Clean" Projects="PressureMatrixMonitor.dproj"/>
+		</Target>
+		<Target Name="PressureMatrixMonitor:Make">
+			<MSBuild Targets="Make" Projects="PressureMatrixMonitor.dproj"/>
+		</Target>
+		<Target Name="PressureMatrixMonitorTests">
+			<MSBuild Projects="Test\PressureMatrixMonitorTests.dproj"/>
+		</Target>
+		<Target Name="PressureMatrixMonitorTests:Clean">
+			<MSBuild Targets="Clean" Projects="Test\PressureMatrixMonitorTests.dproj"/>
+		</Target>
+		<Target Name="PressureMatrixMonitorTests:Make">
+			<MSBuild Targets="Make" Projects="Test\PressureMatrixMonitorTests.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="PressureMatrixMonitor;PressureMatrixMonitorTests"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="PressureMatrixMonitor:Clean;PressureMatrixMonitorTests:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="PressureMatrixMonitor:Make;PressureMatrixMonitorTests:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>
