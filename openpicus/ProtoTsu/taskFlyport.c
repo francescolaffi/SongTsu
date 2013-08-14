@@ -1,4 +1,5 @@
 #include "taskFlyport.h"
+#include "WebSocket.h"
 
 //BYTE g_d1[] = { p2, p5, p10, p12};
 //BYTE g_d2[] = { p4, p6, p11, p14};
@@ -64,7 +65,7 @@ void FlyportTask()
 	vTaskDelay(100);
 	UARTWrite(1,"Welcome to ProtoTsu test program!\r\n");
 
-  InitPorts();
+	InitPorts();
   
 	// Connection to Network
 	#if defined (FLYPORT_WF)
@@ -79,28 +80,39 @@ void FlyportTask()
 	
 	while(1)
 	{
-	UARTWrite(1, "R=");
-    int col;
-    for (col = 0; col < MATRIX_SIZE; ++col)
-    {
-      int row;
-      OutAddr3Bits(col, PIN_OUT_COLS);
-      Delay10us(COL_SEL_DELAY); // wait for line charge
-      for (row = 0; row < MATRIX_SIZE; ++row)
-      {
-        char s[8];
-        OutAddr3Bits(row, PIN_OUT_ROWS);
-        Delay10us(ROW_SEL_DELAY); // wait for a stable signal
-        int val = ADCVal(PIN_IN_TOUCH);
-        if (row != 0 || col != 0)
-        {
-          UARTWrite(1, ",");
-        }
-        sprintf(s, "%d", Convert(val));
-        UARTWrite(1, s);
-      }
-    }
-      UARTWrite(1, "\n");
+		int col;
+		for (col = 0; col < MATRIX_SIZE; ++col)
+		{
+		  char text[64];
+		  sprintf(text, "{\"c\":%d,\"v\":[", col);
+		  int row;
+		  OutAddr3Bits(col, PIN_OUT_COLS);
+		  Delay10us(COL_SEL_DELAY); // wait for line charge
+		  for (row = 0; row < MATRIX_SIZE; ++row)
+		  {
+			char s[8];
+			OutAddr3Bits(row, PIN_OUT_ROWS);
+			Delay10us(ROW_SEL_DELAY); // wait for a stable signal
+			int val = ADCVal(PIN_IN_TOUCH);
+			if (row != 0)
+			{
+			  //UARTWrite(1, ",");
+			  strcat(text, ",");
+			}
+			sprintf(s, "%d", Convert(val));
+			//UARTWrite(1, s);
+			strcat(text, s);
+		  }
+		  strcat(text, "]}");
+		  UARTWrite(1, text);
+		  UARTWrite(1, "\n");
+			int	cnt = WsSendTextEvent(text);
+			if (cnt>0) {
+			  sprintf(text, "EventSubscriber: %d\n", cnt);
+			  UARTWrite(1, text);
+			}
+		}
+		//text[50] = 0;
 
 	  //vTaskDelay(LOOP_DELAY);
 	}
