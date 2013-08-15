@@ -1,0 +1,16 @@
+<div>
+	server
+	<input ng-model="server">
+	<button ng-click="connect()">Connect</button>
+	<button ng-click="disconnect()">Disconnect</button>	
+</div>
+<div>
+	msg
+	<input ng-model="msg">
+	<button ng-click="send()">send</button>	
+</div>
+<div>
+	<ul>
+		<li ng-repeat="item in data"> {{item.v}}</li>	
+	</ul>
+</div>
