@@ -70,11 +70,12 @@
 #define STACK_USE_ICMP_SERVER			// Ping query and response capability
 //#define STACK_USE_ICMP_CLIENT			// Ping transmission capability
 //#define STACK_USE_HTTP_SERVER			// Old HTTP server
-//#define STACK_USE_HTTP2_SERVER			// New HTTP server with POST, Cookies, Authentication, etc.
+#define STACK_USE_HTTP2_SERVER			// New HTTP server with POST, Cookies, Authentication, etc.
 //#define STACK_USE_SSL_SERVER			// SSL server socket support (Requires SW300052)
 //#define STACK_USE_SSL_CLIENT			// SSL client socket support (Requires SW300052)
 //#define STACK_USE_AUTO_IP               // Dynamic link-layer IP address automatic configuration protocol
 #define STACK_USE_DHCP_CLIENT			// Dynamic Host Configuration Protocol client for obtaining IP address and other parameters
+#define STACK_USE_WEBSOCKETS			// JH 
 #define STACK_USE_DHCP_SERVER			// Single host DHCP server
 //#define STACK_USE_FTP_SERVER			// File Transfer Protocol (old)
 #define STACK_USE_SMTP_CLIENT			// Simple Mail Transfer Protocol for sending email
@@ -164,7 +165,7 @@
 
 #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)
 #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)
-#define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)
+#define MY_DEFAULT_IP_ADDR_BYTE3        (20ul)
 #define MY_DEFAULT_IP_ADDR_BYTE4        (115ul)
 
 #define MY_DEFAULT_MASK_BYTE1           (255ul)
@@ -174,12 +175,12 @@
 
 #define MY_DEFAULT_GATE_BYTE1           (192ul)
 #define MY_DEFAULT_GATE_BYTE2           (168ul)
-#define MY_DEFAULT_GATE_BYTE3           (1ul)
+#define MY_DEFAULT_GATE_BYTE3           (20ul)
 #define MY_DEFAULT_GATE_BYTE4           (1ul)
 
 #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(192ul)
 #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(168ul)
-#define MY_DEFAULT_PRIMARY_DNS_BYTE3	(1ul)
+#define MY_DEFAULT_PRIMARY_DNS_BYTE3	(20ul)
 #define MY_DEFAULT_PRIMARY_DNS_BYTE4	(1ul)
 
 #define MY_DEFAULT_SECONDARY_DNS_BYTE1	(0ul)
@@ -291,7 +292,7 @@
 			//{TCP_PURPOSE_UART_2_TCP_BRIDGE, TCP_ETH_RAM, 256, 256},
 {TCP_PURPOSE_HTTP_SERVER, TCP_ETH_RAM, 1000, 1000},
 {TCP_PURPOSE_HTTP_SERVER, TCP_ETH_RAM, 1000, 1000},
-			{TCP_PURPOSE_DEFAULT, TCP_ETH_RAM, 1000, 1000},
+{TCP_PURPOSE_DEFAULT, TCP_ETH_RAM, 1000, 1000},
 			//{TCP_PURPOSE_BERKELEY_SERVER, TCP_ETH_RAM, 25, 20},
 			//{TCP_PURPOSE_BERKELEY_CLIENT, TCP_ETH_RAM, 125, 100}
 		};
@@ -302,7 +303,7 @@
  *   Define the maximum number of available UDP Sockets, and whether
  *   or not to include a checksum on packets being transmitted.
  */
-#define MAX_UDP_SOCKETS     (8u)
+#define MAX_UDP_SOCKETS     (7u)
 //#define UDP_USE_TX_CHECKSUM		// This slows UDP TX performance by nearly 50%, except when using the ENCX24J600, which has a super fast DMA and incurs virtually no speed pentalty.
 
 
@@ -362,7 +363,11 @@
 	#define HTTPS_PORT				(443u)
 	
     // Define the maximum data length for reading cookie and GET/POST arguments (bytes)
-	#define HTTP_MAX_DATA_LEN		(100u)
+        #ifdef STACK_USE_WEBSOCKETS
+            #define HTTP_MAX_DATA_LEN		(450u)
+        #else
+            #define HTTP_MAX_DATA_LEN		(100u)
+        #endif
 	
     // Define the minimum number of bytes free in the TX FIFO before executing callbacks
 	#define HTTP_MIN_CALLBACK_FREE	(16u)
