@@ -87,11 +87,13 @@ begin
       lPanel.Color:=clBlack;
     end;
   end;
-  //fDataTransport:=TDataTransportCom.Create(br19200);
+  fDataTransport:=TDataTransportCom.Create(br19200);
   //fDataTransport:=TDataTransportMock.Create;
+  (*
   fDataTransport:=TDataTransportRec.Create(
      IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)))+'capture.orig',
      false);
+     *)
   fDataCollector:=TDataCollector.Create(fDataTransport,
                                         ',',
                                         'R=',
