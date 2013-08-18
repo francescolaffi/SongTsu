@@ -11,3 +11,4 @@ PressureMatrixMonitor*.exe
 *_EventLog.txt
 *.dcu
 dunit.ini
+node_modules/

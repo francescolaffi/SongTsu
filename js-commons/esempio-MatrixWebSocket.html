@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>websocket matrix test</title>
+    <script type="text/javascript" src="MatrixWebSocket.js"></script>
+    <script type="text/javascript">
+        mws = new MatrixWebSocket(8, 100000);
+        ws = new WebSocket('ws://127.0.0.1:8080');
+        mws.setWebSocket(ws);
+        mws.on('open', function (event) {
+            console.log('open', event);
+        });
+        mws.on('error', function (event) {
+            console.log('error', event);
+        });
+        mws.on('close', function (event) {
+            console.log('close', event);
+        });
+        mws.on('message', function (event) {
+//            console.log('msg', event.data);
+        });
+        mws.on('column', function (col) {
+            console.log('col', col.v.toString(), col);
+        });
+        mws.on('matrix', function (matrix) {
+            var s = '';
+            var dim = matrix.length;
+            for (row = 0; row < dim; row++) {
+                for (col = 0; col < dim; col++) {
+                    s += ('000'+matrix[col][row]).slice(-4)+' ';
+                }
+                s += '\n'
+            }
+            console.log('matrix', '\n'+s, matrix);
+        });
+    </script>
+</head>
+</html>

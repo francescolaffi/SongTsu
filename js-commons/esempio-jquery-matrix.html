@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>websocket matrix test</title>
+    <script src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="MatrixWebSocket.js"></script>
+    <script type="text/javascript" src="jquery-matrix.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            mws = new MatrixWebSocket(8, 100000);
+            ws = new WebSocket('ws://127.0.0.1:8080');
+            mws.setWebSocket(ws);
+            var matrix = $('#matrix').matrix(8);
+            mws.on('matrix', function (matrixData) {
+                matrix.setData(matrixData);
+            });
+        })
+    </script>
+</head>
+<body>
+<div id=matrix style='width:600px; height:600px;'></div>
+</body>
+</html>
