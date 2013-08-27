@@ -121,7 +121,7 @@
  */
 //#define MPFS_USE_EEPROM
 #if defined (FLYPORT_ETH) || defined (FLYPORT_G) 
-	//#define MPFS_USE_SPI_FLASH
+	#define MPFS_USE_SPI_FLASH
 #endif
 /* EEPROM Addressing Selection
  *   If using the 1Mbit EEPROM, uncomment this line
@@ -331,8 +331,8 @@
 	#define MAX_HTTP_CONNECTIONS	(2u)
 
 	// Indicate what file to serve when no specific one is requested
-	#define HTTP_DEFAULT_FILE		"index.htm"
-	#define HTTPS_DEFAULT_FILE		"index.htm"
+	#define HTTP_DEFAULT_FILE		"index.html"
+	#define HTTPS_DEFAULT_FILE		"index.html"
 	#define HTTP_DEFAULT_LEN		(10u)		// For buffer overrun protection.
 												// Set to longest length of above two strings.
 
