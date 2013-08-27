@@ -1,5 +1,5 @@
-'use strict';
 (function ($) {
+    'use strict';
     function Matrix(dimension, opt) {
         var defaults = {
             min: 0,
