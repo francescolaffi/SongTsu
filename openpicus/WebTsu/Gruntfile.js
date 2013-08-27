@@ -21,7 +21,7 @@ module.exports = function (grunt) {
     // configurable paths
     var yeomanConfig = {
         app: 'app',
-        dist: 'dist'
+        dist: '../ProtoTsu/Web pages'
     };
 
     grunt.initConfig({
@@ -375,7 +375,7 @@ module.exports = function (grunt) {
         'uglify',
         'modernizr',
         'copy:dist',
-        //'rev',
+        'rev',
         'usemin'
     ]);
 
