@@ -121,7 +121,7 @@
  */
 //#define MPFS_USE_EEPROM
 #if defined (FLYPORT_ETH) || defined (FLYPORT_G) 
-	#define MPFS_USE_SPI_FLASH
+	//#define MPFS_USE_SPI_FLASH
 #endif
 /* EEPROM Addressing Selection
  *   If using the 1Mbit EEPROM, uncomment this line
@@ -303,7 +303,7 @@
  *   Define the maximum number of available UDP Sockets, and whether
  *   or not to include a checksum on packets being transmitted.
  */
-#define MAX_UDP_SOCKETS     (7u)
+#define MAX_UDP_SOCKETS     (8u)
 //#define UDP_USE_TX_CHECKSUM		// This slows UDP TX performance by nearly 50%, except when using the ENCX24J600, which has a super fast DMA and incurs virtually no speed pentalty.
 
 
