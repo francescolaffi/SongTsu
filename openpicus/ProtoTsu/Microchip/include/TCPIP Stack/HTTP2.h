@@ -76,7 +76,7 @@
         #define HTTP_MIN_CALLBACK_FREE	(16u)
     #endif
 	#define HTTP_CACHE_LEN			("600")	// Max lifetime (sec) of static responses as string
-	#define HTTP_TIMEOUT			(45u)	// Max time (sec) to await more data before
+	#define HTTP_TIMEOUT			(45u)	// Max time (sec) to await more data before timing out and disconnecting the socket
 
 	// Authentication requires Base64 decoding
 	#if defined(HTTP_USE_AUTHENTICATION)

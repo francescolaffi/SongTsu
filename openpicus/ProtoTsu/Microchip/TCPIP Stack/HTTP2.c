@@ -122,6 +122,9 @@
 	static ROM char * ROM HTTPResponseHeaders[] =
 	{
 		"HTTP/1.1 200 OK\r\nConnection: close\r\n",
+        #if defined (STACK_USE_WEBSOCKETS)
+        "HTTP/1.1 200 OK\r\nPLACEHOLDER:WEBSOCKETS\r\n",
+        #endif
 		"HTTP/1.1 200 OK\r\nConnection: close\r\n",
 		"HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n400 Bad Request: can't handle Content-Length\r\n",
 		"HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=\"Protected\"\r\nConnection: close\r\n\r\n401 Unauthorized: Password required\r\n",
@@ -1160,7 +1163,7 @@ static BOOL HTTPSendFile(void)
 	curHTTP.byteCount += numBytes;
 	while(numBytes > 0u)
 	{
-		len = MPFSGetArray(curHTTP.file, data, mMIN(numBytes, 64u));
+		len = MPFSGetArray(curHTTP.file, data, mMIN(numBytes, sizeof(data)));
 		if(len == 0u)
 			return TRUE;
 		else

@@ -121,7 +121,7 @@
  */
 //#define MPFS_USE_EEPROM
 #if defined (FLYPORT_ETH) || defined (FLYPORT_G) 
-	//#define MPFS_USE_SPI_FLASH
+	#define MPFS_USE_SPI_FLASH
 #endif
 /* EEPROM Addressing Selection
  *   If using the 1Mbit EEPROM, uncomment this line
