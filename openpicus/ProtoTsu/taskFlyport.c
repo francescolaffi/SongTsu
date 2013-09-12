@@ -12,6 +12,9 @@
 #define LOOP_DELAY 20 // ms
 
 // S0(LBS), S1, S2(MSB)
+static const BYTE PIN_COL_DATA = p2;
+static const BYTE PIN_COL_CLOCK = p4;
+static const BYTE PIN_COL_RESET = p5;
 static const BYTE PIN_OUT_COLS[] = { p2, p4, p5 };
 static const BYTE PIN_OUT_ROWS[] = { p6, p10, p11};
 static const BYTE PIN_IN_TOUCH = 1;
@@ -42,6 +45,14 @@ static int Convert(int valAdc)
   return Interpolate(WEIGHT[i], WEIGHT[i+1], pos);
 }
 
+static void ConvertCol(int *values)
+{
+	int row;
+	for (row = 0; row < MATRIX_SIZE; ++row) {
+		values[row] = Convert(values[row]);
+	}
+}
+
 static void InitPorts()
 {
   int i;
@@ -58,6 +69,82 @@ static void OutAddr3Bits(int addr, const BYTE *pins)
   IOPut(pins[0], (addr & 0x01) != 0 ? ON : OFF);
   IOPut(pins[1], (addr & 0x02) != 0 ? ON : OFF);
   IOPut(pins[2], (addr & 0x04) != 0 ? ON : OFF);
+}
+
+static void OutColShift()
+{
+	IOPut(PIN_COL_CLOCK, ON);
+	Delay10us(1);
+	IOPut(PIN_COL_CLOCK, OFF);
+	Delay10us(1);
+}
+
+static void OutAddrColShift(int addr)
+{
+	int i;
+	IOPut(PIN_COL_RESET, OFF); // reset
+	IOPut(PIN_COL_CLOCK, OFF);
+	IOPut(PIN_COL_DATA, ON);
+	IOPut(PIN_COL_RESET, ON);
+	Delay10us(1);
+	OutColShift();
+	IOPut(PIN_COL_DATA, OFF);
+	Delay10us(1);	
+	for (i = 0; i < addr; ++i) {
+		OutColShift();
+	}
+}
+
+static void ReadCol(int col, int *values)
+{
+	int row;
+	//OutAddr3Bits(col, PIN_OUT_COLS);
+	OutAddrColShift(col);
+	Delay10us(COL_SEL_DELAY); // wait for line charge
+	for (row = 0; row < MATRIX_SIZE; ++row)
+	{
+		OutAddr3Bits(row, PIN_OUT_ROWS);
+		Delay10us(ROW_SEL_DELAY); // wait for a stable signal
+		values[row] = ADCVal(PIN_IN_TOUCH);
+	}
+}
+
+static void SendColWS(int col, int values[])
+{
+	char text[64];
+	int row;
+	sprintf(text, "{\"c\":%d,\"v\":[", col);
+	for (row = 0; row < MATRIX_SIZE; ++row) {
+		if (row != 0)
+		{
+			strcat(text, ",");
+		}
+		char s[10];
+		sprintf(s, "%d", values[row]);
+		strcat(text, s);
+	}
+	strcat(text, "]}");
+	WsSendTextEvent(text);
+	//int	cnt = WsSendTextEvent(text);
+	//if (cnt>0) {
+	//  sprintf(text, "EventSubscriber: %d\n", cnt);
+	// UARTWrite(1, text);
+	//}
+}
+
+static void SendFrameUart(const int *frame)
+{
+	int elem;
+	UARTWrite(1, "R=");
+	for (elem = 0; elem < MATRIX_SIZE*MATRIX_SIZE; ++elem) {
+		if (elem != 0) {
+			UARTWrite(1, ",");
+		}
+		char s[10];
+		sprintf(s, "%d", frame[elem]);
+		UARTWrite(1, s);
+	}
+	UARTWrite(1, "\n");
 }
 
 void FlyportTask()
@@ -80,40 +167,14 @@ void FlyportTask()
 	
 	while(1)
 	{
+		int frame[MATRIX_SIZE][MATRIX_SIZE];
 		int col;
 		for (col = 0; col < MATRIX_SIZE; ++col)
 		{
-		  char text[64];
-		  sprintf(text, "{\"c\":%d,\"v\":[", col);
-		  int row;
-		  OutAddr3Bits(col, PIN_OUT_COLS);
-		  Delay10us(COL_SEL_DELAY); // wait for line charge
-		  for (row = 0; row < MATRIX_SIZE; ++row)
-		  {
-			char s[8];
-			OutAddr3Bits(row, PIN_OUT_ROWS);
-			Delay10us(ROW_SEL_DELAY); // wait for a stable signal
-			int val = ADCVal(PIN_IN_TOUCH);
-			if (row != 0)
-			{
-			  //UARTWrite(1, ",");
-			  strcat(text, ",");
-			}
-			sprintf(s, "%d", Convert(val));
-			//UARTWrite(1, s);
-			strcat(text, s);
-		  }
-		  strcat(text, "]}");
-		  UARTWrite(1, text);
-		  UARTWrite(1, "\n");
-			int	cnt = WsSendTextEvent(text);
-			if (cnt>0) {
-			  sprintf(text, "EventSubscriber: %d\n", cnt);
-			  UARTWrite(1, text);
-			}
+			ReadCol(col, frame[col]);
+			ConvertCol(frame[col]);
+			SendColWS(col, frame[col]);
 		}
-		//text[50] = 0;
-
-	  //vTaskDelay(LOOP_DELAY);
+		SendFrameUart(frame[0]);
 	}
 }
