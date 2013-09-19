@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="6.4">
+<eagle version="6.3">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -122,15 +122,15 @@
 <connects>
 <connect gate="G$1" pin="/E" pad="6"/>
 <connect gate="G$1" pin="GND" pad="8"/>
-<connect gate="G$1" pin="S0" pad="14"/>
-<connect gate="G$1" pin="S1" pad="15"/>
-<connect gate="G$1" pin="S2" pad="16"/>
-<connect gate="G$1" pin="VCC" pad="9"/>
+<connect gate="G$1" pin="S0" pad="11"/>
+<connect gate="G$1" pin="S1" pad="10"/>
+<connect gate="G$1" pin="S2" pad="9"/>
+<connect gate="G$1" pin="VCC" pad="16"/>
 <connect gate="G$1" pin="VEE" pad="7"/>
-<connect gate="G$1" pin="Y0" pad="12"/>
-<connect gate="G$1" pin="Y1" pad="11"/>
-<connect gate="G$1" pin="Y2" pad="10"/>
-<connect gate="G$1" pin="Y3" pad="13"/>
+<connect gate="G$1" pin="Y0" pad="13"/>
+<connect gate="G$1" pin="Y1" pad="14"/>
+<connect gate="G$1" pin="Y2" pad="15"/>
+<connect gate="G$1" pin="Y3" pad="12"/>
 <connect gate="G$1" pin="Y4" pad="1"/>
 <connect gate="G$1" pin="Y5" pad="5"/>
 <connect gate="G$1" pin="Y6" pad="2"/>
@@ -513,7 +513,7 @@ Source: http://catalog.tycoelectronics.com .. ENG_CD_794623_F.pdf</description>
 <plain>
 <text x="-43.18" y="66.04" size="1.778" layer="91">Date: 2013 Sep 15
 Author: Yuri Valentini
-Version: 1.1.0</text>
+Version: 1.2.0</text>
 </plain>
 <instances>
 <instance part="IC1" gate="G$1" x="33.02" y="73.66"/>
