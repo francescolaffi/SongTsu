@@ -7,16 +7,17 @@
 
 #define ARRAY_LEN(a) (sizeof(a)/sizeof(a[0]))
 #define MATRIX_SIZE 8
-#define ROW_SEL_DELAY 1 // 10us units
-#define COL_SEL_DELAY 2
-#define LOOP_DELAY 20 // ms
+#define ROW_SEL_DELAY 15 // 10us units
+#define COL_SEL_DELAY 30
+
+BYTE g_uartEnabled = 0;
 
 // S0(LBS), S1, S2(MSB)
 static const BYTE PIN_COL_DATA = p2;
 static const BYTE PIN_COL_CLOCK = p4;
 static const BYTE PIN_COL_RESET = p5;
-static const BYTE PIN_OUT_COLS[] = { p2, p4, p5 };
-static const BYTE PIN_OUT_ROWS[] = { p6, p10, p11};
+static const BYTE PIN_OUT_ROWS[] = { p2, p4, p5 };
+static const BYTE PIN_OUT_COLS[] = { p6, p10, p11};
 static const BYTE PIN_IN_TOUCH = 1;
 
 // table in grams / 10
@@ -98,12 +99,12 @@ static void OutAddrColShift(int addr)
 static void ReadCol(int col, int *values)
 {
 	int row;
-	//OutAddr3Bits(col, PIN_OUT_COLS);
-	OutAddrColShift(col);
+	OutAddr3Bits(col, PIN_OUT_COLS);
+	//OutAddrColShift(col);
 	Delay10us(COL_SEL_DELAY); // wait for line charge
 	for (row = 0; row < MATRIX_SIZE; ++row)
 	{
-		OutAddr3Bits(row, PIN_OUT_ROWS);
+		OutAddr3Bits(MATRIX_SIZE-1-row, PIN_OUT_ROWS);
 		Delay10us(ROW_SEL_DELAY); // wait for a stable signal
 		values[row] = ADCVal(PIN_IN_TOUCH);
 	}
@@ -175,6 +176,9 @@ void FlyportTask()
 			ConvertCol(frame[col]);
 			SendColWS(col, frame[col]);
 		}
-		SendFrameUart(frame[0]);
+		if (g_uartEnabled)
+		{
+			SendFrameUart(frame[0]);
+		}
 	}
 }
