@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>SongTsu</title>
+    <link rel="stylesheet" href="src/css/style.css">
+    <script src="src/js/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="src/js/MatrixWebSocket.js"></script>
+    <!-- <script type="text/javascript" src="src/js/jquery-matrix.js"></script> -->
+    <!-- <script type="text/javascript" src="src/js/jquery.iwish.js"></script> -->
+    <script type="text/javascript" src="src/js/svg.min.js"></script>
+    <script type="text/javascript" src="src/js/svg-matrix.js"></script>
+    <script type="text/javascript" src="src/js/jquery.jplayer.js"></script>
+    <script type="text/javascript" src="src/js/jplayer.playlist.js"></script>
+    <script type="text/javascript">
+    </script>
+</head>
+<body>
+    <div id=matrix style='width:600px; height:600px;'></div>
+    Player <div id="jpId"></div>
+</body>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //ready
+        var cssSelector = { jPlayer: "#jpId", cssSelectorAncestor: "#jpId" };
+        var playlist = [
+            {
+                title:"Bourre",
+                artist:"Sconosciuto",
+                mp3:"src/mp3/bourre.mp3",
+                poster: "http://www.jplayer.org/audio/poster/The_Stark_Palace_640x360.png"
+            },
+            {
+                title:"Chapelloise",
+                artist:"Sconosciuto",
+                mp3:"src/mp3/chapelloise.mp3",
+                poster: "http://www.jplayer.org/audio/poster/The_Stark_Palace_640x360.png"
+            }
+        ];
+        var options = { supplied: "ogv, m4v, oga, mp3" };
+        var myPlaylist = new jPlayerPlaylist(cssSelector, playlist, options);
+        
+        var index = 0;
+        
+        var index = 0;
+        
+        $(function () {
+            mws = new MatrixWebSocket(8, 100000);
+            ws = new WebSocket('ws://127.0.0.1:8080');
+//            ws = new WebSocket('ws://192.168.20.47:8080');
+            mws.setWebSocket(ws);
+            var matrix = $('#matrix').matrix(8);
+            mws.on('matrix', function (matrixData) {
+                matrix.setData(matrixData);
+                //setto la musica
+                //console.log(matrixData)
+                //myPlaylist.play(0); 
+                var totale = 0
+                for (var i=0;i<matrixData.length;i++) {
+                    var s = matrixData[i];
+                    for (var row=0;row<8;row++) {
+                        totale += s[row];
+                    }
+                }
+                console.log(totale);
+                
+                if ( 300 < totale ) newIndex = 1;
+                else newIndex = 0;
+                
+                if ( index != newIndex ) {
+                    console.log("new index");
+                    myPlaylist.play(newIndex); 
+                    index = newIndex;
+                }
+                
+            });
+        })
+    });
+</script>
+</html>
