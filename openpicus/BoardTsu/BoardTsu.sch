@@ -511,9 +511,9 @@ Source: http://catalog.tycoelectronics.com .. ENG_CD_794623_F.pdf</description>
 <sheets>
 <sheet>
 <plain>
-<text x="-43.18" y="66.04" size="1.778" layer="91">Date: 2013 Sep 15
+<text x="-43.18" y="66.04" size="1.778" layer="91">Date: 2013 Sep 27
 Author: Yuri Valentini
-Version: 1.2.0</text>
+Version: 1.2.1</text>
 </plain>
 <instances>
 <instance part="IC1" gate="G$1" x="33.02" y="73.66"/>
@@ -628,11 +628,9 @@ Version: 1.2.0</text>
 <net name="N$6" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="Y5"/>
-<wire x1="15.24" y1="73.66" x2="20.32" y2="73.66" width="0.1524" layer="91"/>
-<wire x1="15.24" y1="73.66" x2="15.24" y2="55.88" width="0.1524" layer="91"/>
-<wire x1="15.24" y1="55.88" x2="-12.7" y2="55.88" width="0.1524" layer="91"/>
-<wire x1="-12.7" y1="55.88" x2="-12.7" y2="114.3" width="0.1524" layer="91"/>
-<wire x1="-12.7" y1="114.3" x2="45.72" y2="114.3" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="73.66" x2="5.08" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="73.66" x2="5.08" y2="114.3" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="114.3" x2="45.72" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="114.3" x2="45.72" y2="106.68" width="0.1524" layer="91"/>
 <pinref part="COL" gate="G$1" pin="6"/>
 <wire x1="45.72" y1="106.68" x2="38.1" y2="106.68" width="0.1524" layer="91"/>
@@ -707,12 +705,10 @@ Version: 1.2.0</text>
 <pinref part="COL" gate="G$1" pin="8"/>
 <wire x1="38.1" y1="109.22" x2="43.18" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="43.18" y1="109.22" x2="43.18" y2="111.76" width="0.1524" layer="91"/>
-<wire x1="43.18" y1="111.76" x2="-10.16" y2="111.76" width="0.1524" layer="91"/>
-<wire x1="-10.16" y1="111.76" x2="-10.16" y2="58.42" width="0.1524" layer="91"/>
-<wire x1="-10.16" y1="58.42" x2="12.7" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="43.18" y1="111.76" x2="7.62" y2="111.76" width="0.1524" layer="91"/>
+<wire x1="7.62" y1="111.76" x2="7.62" y2="76.2" width="0.1524" layer="91"/>
+<wire x1="7.62" y1="76.2" x2="20.32" y2="76.2" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="Y7"/>
-<wire x1="12.7" y1="76.2" x2="20.32" y2="76.2" width="0.1524" layer="91"/>
-<wire x1="12.7" y1="58.42" x2="12.7" y2="76.2" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$16" class="0">
