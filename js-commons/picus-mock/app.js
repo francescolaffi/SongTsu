@@ -36,7 +36,7 @@ wss.on('connection', function(ws) {
     if (!interval) {
         matrix.randomize();
         currentCol = Math.floor(Math.random() * dim);
-        interval = setInterval(doCol, colDelay);
+        interval = setInterval(doCol, colDelay*1000);
     }
 
     ws.on('message', function(message) {

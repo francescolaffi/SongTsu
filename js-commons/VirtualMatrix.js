@@ -54,7 +54,7 @@
     p.simulate = function () {
         this.pressureCol = randConstrained(this.pressureCol, this.movementDelta, 0, this.dimension);
         this.pressureRow = randConstrained(this.pressureRow, this.movementDelta, 0, this.dimension);
-        this.pressureValue = Math.floor(randConstrained(this.pressureValue, this.pressureDelta, 0, 1023));
+        this.pressureValue = Math.floor(randConstrained(this.pressureValue, this.pressureDelta, 200, 1023));
         this.calcMatrix();
     }
 
