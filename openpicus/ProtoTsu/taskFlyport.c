@@ -180,5 +180,6 @@ void FlyportTask()
 		{
 			SendFrameUart(frame[0]);
 		}
+		vTaskDelay(1);
 	}
 }
