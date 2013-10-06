@@ -9,8 +9,10 @@
     <script src="svg-matrix.js"></script>
     <script type="text/javascript">
         $(function () {
-            mws = new MatrixWebSocket(8, 100000);
-            ws = new WebSocket('ws://'+window.location.host);
+            var mws = new MatrixWebSocket(8, 100000),
+              //ws = new WebSocket('ws://127.0.0.1:8080'),
+              ws = new WebSocket('ws://'+window.location.host),
+              matrix;
             mws.setWebSocket(ws);
             matrix = $('#matrix').matrix(8);
             mws.on('matrix', function (matrixData) {
