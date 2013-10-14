@@ -125,6 +125,9 @@ static void SendColWS(int col, int values[])
 		strcat(text, s);
 	}
 	strcat(text, "]}");
+  while (WsDoSend(curHTTPID)) {
+    vTaskDelay(1); // wait for transmission completed
+  }
 	WsSendTextEvent(text);
 	//int	cnt = WsSendTextEvent(text);
 	//if (cnt>0) {
