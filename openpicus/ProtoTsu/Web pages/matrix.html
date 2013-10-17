@@ -6,11 +6,13 @@
     <script src="3rd-party/jquery-2.0.3.min.js"></script>
     <script src="MatrixWebSocket.js"></script>
     <script src="3rd-party/svg.min.js"></script>
-    <script src="svg-matrix.js"></script>
+    <script src="jquery-matrix.js"></script>
     <script type="text/javascript">
         $(function () {
-            mws = new MatrixWebSocket(8, 100000);
-            ws = new WebSocket('ws://'+window.location.host);
+            var mws = new songtsu.MatrixWebSocket(8, 100000),
+              //ws = new WebSocket('ws://127.0.0.1:8080'),
+              ws = new WebSocket('ws://'+window.location.host),
+              matrix;
             mws.setWebSocket(ws);
             matrix = $('#matrix').matrix(8);
             mws.on('matrix', function (matrixData) {
@@ -20,6 +22,7 @@
     </script>
 </head>
 <body>
-<div id=matrix style='width:600px; height:600px;'></div>
+<h1>Tocca il tessuto qui sotto / Touch the fabric here under</h1>
+<div id=matrix style='width:560px; height:560px;'></div>
 </body>
 </html>

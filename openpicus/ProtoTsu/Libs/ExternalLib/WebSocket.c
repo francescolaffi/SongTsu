@@ -100,7 +100,7 @@ int WsSendEvent(BYTE* text, int textLen) {
 					wsFrameBuf[conn][a] = text[a];
 				}
 				dest++;
-            }
+      }
 		}
 	}
 	return dest;

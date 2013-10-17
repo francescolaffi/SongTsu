@@ -9,7 +9,7 @@
     <script src="svg-matrix.js"></script>
     <script type="text/javascript">
         $(function () {
-            var mws = new MatrixWebSocket(8, 100000),
+            var mws = new songtsu.MatrixWebSocket(8, 100000),
               //ws = new WebSocket('ws://127.0.0.1:8080'),
               ws = new WebSocket('ws://'+window.location.host),
               matrix;
@@ -22,6 +22,7 @@
     </script>
 </head>
 <body>
-<div id=matrix style='width:600px; height:600px;'></div>
+<h2>Tocca il tessuto qui sotto / Touch the fabric here under</h2>
+<div id=matrix style='width:560px; height:560px;'></div>
 </body>
 </html>

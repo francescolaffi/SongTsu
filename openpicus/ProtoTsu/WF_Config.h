@@ -95,7 +95,7 @@ extern int _WFStat;
 /*--------------------------------------------*/
 /* Default settings for Connection Management */
 /*--------------------------------------------*/
-#define MY_DEFAULT_SSID_NAME                "__SSID__"
+#define MY_DEFAULT_SSID_NAME                "SONGTSU"
 
 #define MY_DEFAULT_NETWORK_TYPE             WF_INFRASTRUCTURE   /* WF_INFRASTRUCTURE WF_SOFT_AP or WF_ADHOC     */
 
@@ -144,7 +144,7 @@ extern int _WFStat;
 // "Microchip 802.11 Secret PSK Password".
 // The tool at http://www.wireshark.org/tools/wpa-psk.html can be used to generate this field.
 
-#define MY_DEFAULT_PSK_PHRASE               "__WPA_PSK__"
+#define MY_DEFAULT_PSK_PHRASE               "bonziemiliani"
 
 #define MY_DEFAULT_PSK "\
 \x00\x00\x00\x00\x00\x00\x00\x00\
