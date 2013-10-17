@@ -1,0 +1,9 @@
+{
+     "name": "songtsu-server",
+     "description": "test",
+     "version": "0.0.1",
+     "dependencies": {
+        "socket.io": "0.9.16",
+	"express": "2.4.6"
+     }
+}

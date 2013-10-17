@@ -1,0 +1,9 @@
+{
+     "name": "songtsu-server",
+     "description": "test",
+     "version": "0.0.1",
+     "dependencies": {
+		"ws": "0.4.30",
+		"redis" : "0.8.6",
+     }
+}
